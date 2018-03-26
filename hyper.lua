@@ -1,5 +1,6 @@
-hyper = {'cmd', 'alt', 'shift', 'ctrl'}
--- A variable for the Hyper Mode
+hyper = {'cmd', 'alt', 'shift', 'ctrl' }
+
+-- Intermediate modal as a proxy to forward `hyper + <key>` event to `cmd + alt + shift + ctrl + <key>` event
 local hyper_modal = hs.hotkey.modal.new({}, 'F17')
 
 -- All of the keys, from here:
@@ -15,41 +16,33 @@ local keys = {
   "left", "right", "down", "up"
 }
 
--- sends a key event with all modifiers
--- bool -> string -> void -> side effect
-local hyper_event = function(isdown)
-  return function(key)
-    return function()
-      hyper_modal.triggered = true
-      local event = hs.eventtap.event.newKeyEvent(hyper, key, isdown)
-      event:post()
-    end
+local hyper_with_key = function(key)
+  return function()
+    hs.eventtap.keyStroke(hyper, key)
+    hyper_modal.triggered = true
   end
 end
 
-local hyperDown = hyper_event(true)
-local hyperUp = hyper_event(false)
-
--- bind all the keys in the huge keys table
-for _, key in pairs(keys) do
-  hyper_modal:bind('', key, nil, hyperDown(key), hyperUp(key), nil)
-end
-
--- Enter Hyper Mode when F18 (Hyper/Capslock) is pressed
-local pressedF18 = function()
+local enter_hyper_mode = function()
   hyper_modal.triggered = false
   hyper_modal:enter()
 end
 
--- Leave Hyper Mode when F18 (Hyper/Capslock) is pressed,
---   send ESCAPE if no other keys are pressed.
-local releasedF18 = function()
+-- Leave Hyper Mode. Send ESCAPE if Hyper Mode was not triggered (no other keys are pressed)
+local exit_hyper_mode = function()
   hyper_modal:exit()
   if not hyper_modal.triggered then
     hs.eventtap.keyStroke({}, 'ESCAPE')
   end
 end
 
+-- Enable all the keys in the Hyper Mode
+for _, key in pairs(keys) do
+  hyper_modal:bind('', key, nil, hyper_with_key(key))
+end
+
 -- Bind the Hyper key
-hs.hotkey.bind({}, 'F18', pressedF18, releasedF18)
+-- Enter Hyper Mode when F18 (Capslock) is pressed
+-- Leave Hyper Mode when F18 (Capslock) is released
+hs.hotkey.bind({}, 'F18', enter_hyper_mode, exit_hyper_mode)
 

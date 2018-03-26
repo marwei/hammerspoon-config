@@ -8,7 +8,7 @@ function toggle_modal_key_display()
     local localMainRes = mainScreen:absoluteToLocal(mainRes)
     local hkbgrect = hs.geometry.rect(mainScreen:localToAbsolute(localMainRes.w/5,localMainRes.h/5,localMainRes.w/5*3,localMainRes.h/5*3))
     hotkeybg = hs.drawing.rectangle(hkbgrect)
-    -- hotkeybg:setStroke(false)
+    hotkeybg:setStroke(false)
     if not hotkey_tips_bg then hotkey_tips_bg = "light" end
     if hotkey_tips_bg == "light" then
       hotkeybg:setFillColor({red=238/255,blue=238/255,green=238/255,alpha=0.95})

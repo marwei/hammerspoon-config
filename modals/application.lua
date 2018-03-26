@@ -6,7 +6,6 @@ function appM:entered()
 end
 
 function appM:exited()
-  print('exited!!!!!!!!!!!')
   toggle_modal_light(lawngreen,0.7)
   if show_modal == true then toggle_modal_key_display() end
 end
