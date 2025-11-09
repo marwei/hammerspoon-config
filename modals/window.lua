@@ -1,3 +1,5 @@
+local prev_direction = ''
+
 function move_win(direction)
   local win = hs.window.focusedWindow()
   local screen = win:screen()
@@ -13,74 +15,79 @@ end
 function resize_win(direction)
   local win = hs.window.focusedWindow()
   if win then
+    local double_press = false
     local f = win:frame()
     local screen = win:screen()
     local localf = screen:absoluteToLocal(f)
     local max = screen:fullFrame()
     local stepw = max.w/30
     local steph = max.h/30
-    if direction == "right" then
-      localf.w = localf.w+stepw
-      local absolutef = screen:localToAbsolute(localf)
-      win:setFrame(absolutef)
-    end
-    if direction == "left" then
-      localf.w = localf.w-stepw
-      local absolutef = screen:localToAbsolute(localf)
-      win:setFrame(absolutef)
-    end
-    if direction == "up" then
-      localf.h = localf.h-steph
-      local absolutef = screen:localToAbsolute(localf)
-      win:setFrame(absolutef)
-    end
-    if direction == "down" then
-      localf.h = localf.h+steph
+    local split_left = max.w * 0
+    local width_left = max.w * 0.5
+    local split_center = max.w * 0.25
+    local width_center = max.w * 0.5
+    local split_right = max.w * 0.5
+    local width_right = max.w * 0.5
+    if direction == "halfleft" then
+      localf.x = split_left localf.y = 0 localf.w = width_left localf.h = max.h
+      if direction == prev_direction then
+          localf.w = localf.w / 2 double_press = true
+      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "halfright" then
-      localf.x = max.w/2 localf.y = 0 localf.w = max.w/2 localf.h = max.h
-      local absolutef = screen:localToAbsolute(localf)
-      win:setFrame(absolutef)
-    end
-    if direction == "halfleft" then
-      localf.x = 0 localf.y = 0 localf.w = max.w/2 localf.h = max.h
+      localf.x = split_right localf.y = 0 localf.w = width_right localf.h = max.h
+      if direction == prev_direction then
+          localf.w = localf.w / 2 localf.x = split_right + max.w * 0.25 double_press = true
+      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "halfup" then
-      localf.x = 0 localf.y = 0 localf.w = max.w localf.h = max.h/2
+      localf.x = split_center localf.y = 0 localf.w = width_center localf.h = max.h/2
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "halfdown" then
-      localf.x = 0 localf.y = max.h/2 localf.w = max.w localf.h = max.h/2
+      localf.x = split_center localf.y = max.h/2 localf.w = width_center localf.h = max.h/2
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "cornerNE" then
-      localf.x = max.w/2 localf.y = 0 localf.w = max.w/2 localf.h = max.h/2
+      localf.x = split_right localf.y = 0 localf.w = width_right localf.h = max.h/2
+      if direction == prev_direction then
+          localf.w = localf.w / 2 localf.x = split_right + max.w * 0.25 double_press = true
+      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "cornerSE" then
-      localf.x = max.w/2 localf.y = max.h/2 localf.w = max.w/2 localf.h = max.h/2
+      localf.x = split_right localf.y = max.h/2 localf.w = width_right localf.h = max.h/2
+      if direction == prev_direction then
+          localf.w = localf.w / 2 localf.x = split_right + max.w * 0.25 double_press = true
+      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "cornerNW" then
-      localf.x = 0 localf.y = 0 localf.w = max.w/2 localf.h = max.h/2
+      localf.x = split_left localf.y = 0 localf.w = width_left localf.h = max.h/2
+      if direction == prev_direction then
+          localf.w = localf.w / 2 double_press = true
+      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "cornerSW" then
-      localf.x = 0 localf.y = max.h/2 localf.w = max.w/2 localf.h = max.h/2
+      localf.x = split_left localf.y = max.h/2 localf.w = width_left localf.h = max.h/2
+      if direction == prev_direction then
+          localf.w = localf.w / 2 double_press = true
+      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "center" then
-      localf.x = (max.w-localf.w)/2 localf.y = (max.h-localf.h)/2
+      localf.x = split_center localf.y = 0 localf.w = width_center localf.h = max.h
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
@@ -128,6 +135,11 @@ function resize_win(direction)
       localf.x = localf.x+localf.w/2 localf.y = localf.y+localf.h/2
       hs.mouse.setRelativePosition({x=localf.x,y=localf.y},screen)
     end
+    if double_press then
+      prev_direction = ''
+    else
+      prev_direction = direction
+    end
   else
     hs.alert.show("No focused window!")
   end
@@ -147,10 +159,6 @@ end
 
 resizeM:bind('', 'escape', function() resizeM:exit() end)
 
-resizeM:bind('shift', 'Y', 'Shrink Leftward', function() resize_win('left') end, nil, function() resize_win('left') end)
-resizeM:bind('shift', 'O', 'Stretch Rightward', function() resize_win('right') end, nil, function() resize_win('right') end)
-resizeM:bind('shift', 'U', 'Stretch Downward', function() resize_win('down') end, nil, function() resize_win('down') end)
-resizeM:bind('shift', 'I', 'Shrink Upward', function() resize_win('up') end, nil, function() resize_win('up') end)
 resizeM:bind('', 'F', 'Fullscreen', function() resize_win('fullscreen') end, nil, nil)
 resizeM:bind('', 'C', 'Center Window', function() resize_win('center') end, nil, nil)
 resizeM:bind('shift', 'C', 'Resize & Center', function() resize_win('fcenter') end, nil, nil)

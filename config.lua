@@ -1,17 +1,17 @@
 applist = {
-    {shortcut = 't',appname = 'iTerm'},
-    {shortcut = 'd',appname = 'DataGrip'},
-    {shortcut = 'b',appname = 'Google Chrome'},
-    {shortcut = 'c',appname = 'Calendar'},
-    {shortcut = 'a',appname = 'Activity Monitor'},
+    {shortcut = 'i',appname = 'iTerm'},
+    {shortcut = 'c',appname = 'Google Chrome'},
     {shortcut = 'w',appname = 'Wechat'},
     {shortcut = 'p',appname = 'Pycharm'},
-    {shortcut = 'i',appname = 'Intellij IDEA'},
     {shortcut = 's',appname = 'Slack'},
+    {shortcut = 'n',appname = 'Notion'},
+    {shortcut = 'c',appname = 'ChatGPT'},
+    {shortcut = 'r',appname = 'Replit'},
+    {shortcut = ';',appname = 'Postman'},
+    {shortcut = 'f',appname = 'Figma'}
 }
 
 module_list = {
-    "widgets/netspeed",
     "modals/window",
     "modals/application",
 }
