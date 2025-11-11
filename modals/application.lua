@@ -12,19 +12,17 @@ end
 
 appM:bind('', 'escape', function() appM:exit() end)
 
-if not applist then
-  applist = {
-    {shortcut = 'f',appname = 'Finder'},
-    {shortcut = 's',appname = 'Safari'},
-    {shortcut = 't',appname = 'Terminal'},
-    {shortcut = 'v',appname = 'Activity Monitor'},
-    {shortcut = 'y',appname = 'System Preferences'},
-  }
-end
+appM:bind('', 'B', 'Browser (Chrome)', function()
+  hs.application.launchOrFocus('Google Chrome')
+  appM:exit()
+end)
 
-for i = 1, #applist do
-  appM:bind('', applist[i].shortcut, applist[i].appname, function()
-    hs.application.launchOrFocus(applist[i].appname)
-    appM:exit()
-  end)
-end
+appM:bind('', 'N', 'Notes (Obsidian)', function()
+  hs.application.launchOrFocus('Obsidian')
+  appM:exit()
+end)
+
+appM:bind('', 'T', 'Terminal (iTerm)', function()
+  hs.application.launchOrFocus('iTerm')
+  appM:exit()
+end)
