@@ -25,7 +25,7 @@ autoM:bind('', 'V', 'Connect VPN', function()
   autoM:exit()
 end)
 
-autoM:bind('', 'C', 'Cerebral', function()
+autoM:bind('', 'A', 'Cerebral', function()
   -- Trigger macOS Shortcut "Cerebral"
   hs.task.new("/usr/bin/shortcuts", function(exitCode, stdOut, stdErr)
     if exitCode == 0 then
