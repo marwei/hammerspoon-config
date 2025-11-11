@@ -12,6 +12,17 @@ end
 
 appM:bind('', 'escape', function() appM:exit() end)
 
+-- Helper function to get the built-in/native Mac display
+local function getNativeScreen()
+  local allScreens = hs.screen.allScreens()
+  for _, screen in ipairs(allScreens) do
+    if screen:name():match("Built%-in") or screen:name():match("Color LCD") then
+      return screen
+    end
+  end
+  return hs.screen.primaryScreen()
+end
+
 appM:bind('', 'B', 'Browser (Default)', function()
   local defaultBrowser = hs.urlevent.getDefaultHandler('http')
   if defaultBrowser then
@@ -29,6 +40,31 @@ end)
 
 appM:bind('', 'I', 'Terminal (iTerm)', function()
   hs.application.launchOrFocus('iTerm')
+
+  -- Move iTerm to native screen and make it fullscreen
+  hs.timer.doAfter(0.3, function()
+    local app = hs.application.get('iTerm2')
+    if app then
+      local win = app:mainWindow()
+      if win then
+        local nativeScreen = getNativeScreen()
+        win:moveToScreen(nativeScreen, false, true, 0)
+
+        -- Make fullscreen
+        hs.timer.doAfter(0.2, function()
+          local max = nativeScreen:fullFrame()
+          local localf = {}
+          localf.x = 0
+          localf.y = 0
+          localf.w = max.w
+          localf.h = max.h
+          local absolutef = nativeScreen:localToAbsolute(localf)
+          win:setFrame(absolutef, 0)
+        end)
+      end
+    end
+  end)
+
   appM:exit()
 end)
 

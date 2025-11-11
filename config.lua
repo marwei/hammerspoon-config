@@ -14,6 +14,8 @@ applist = {
 module_list = {
     "modals/window",
     "modals/application",
+    "modals/layout",
+    "modals/automation",
 }
 
 show_modal = true
