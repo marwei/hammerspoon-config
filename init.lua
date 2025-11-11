@@ -17,7 +17,7 @@ showhotkey_keys = {hyper, "H"}
 
 resizeM_keys = {hyper, "M"}
 appM_keys = {hyper, "space"}
-layoutM_keys = {hyper, "return"}
+layoutM_keys = {hyper, "T"}
 autoM_keys = {hyper, "A"}
 toggleconsole_keys = {hyper, "Z"}
 
