@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nEnhance application launcher with dynamic shortcuts and system defaults\n\nAdd conditional email launcher (Outlook/Gmail), system default browser detection, and new app shortcuts (VSCode, Teams, Loop, Granola). Remap shortcuts for better ergonomics: Terminal (T→I), Notes (N→O), Teams (T).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git commit -m \"$(cat <<''EOF''\nEnhance application launcher with dynamic shortcuts and system defaults\n\nAdd conditional email launcher (Outlook/Gmail), system default browser detection, and new app shortcuts (VSCode, Teams, Loop, Granola). Remap shortcuts for better ergonomics: Terminal (T→I), Notes (N→O), Teams (T).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nChange Cerebral automation shortcut from C to A\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

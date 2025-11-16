@@ -14,8 +14,12 @@ function toggle_modal_key_display()
     local global_descriptions = {
       ["Enter Resize Mode"] = true,
       ["Enter App Launcher Mode"] = true,
+      ["Enter Layout Mode"] = true,
+      ["Enter Automation Mode"] = true,
+      ["Enter Cerebral Mode"] = true,
       ["Reload Configuration"] = true,
       ["Toggle Hotkeys Cheatsheet"] = true,
+      ["Toggle Global Shortcuts"] = true,
       ["Toggle Hammerspoon Console"] = true,
     }
 

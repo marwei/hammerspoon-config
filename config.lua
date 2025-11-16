@@ -16,6 +16,7 @@ module_list = {
     "modals/application",
     "modals/layout",
     "modals/automation",
+    "modals/cerebral",
 }
 
 show_modal = true

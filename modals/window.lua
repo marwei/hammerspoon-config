@@ -1,9 +1,6 @@
-local prev_direction = ''
-
 function resize_win(direction)
   local win = hs.window.focusedWindow()
   if win then
-    local double_press = false
     local f = win:frame()
     local screen = win:screen()
     local localf = screen:absoluteToLocal(f)
@@ -17,17 +14,11 @@ function resize_win(direction)
 
     if direction == "halfleft" then
       localf.x = split_left localf.y = 0 localf.w = width_left localf.h = max.h
-      if direction == prev_direction then
-          localf.w = localf.w / 2 double_press = true
-      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
     if direction == "halfright" then
       localf.x = split_right localf.y = 0 localf.w = width_right localf.h = max.h
-      if direction == prev_direction then
-          localf.w = localf.w / 2 localf.x = split_right + max.w * 0.25 double_press = true
-      end
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
@@ -41,11 +32,15 @@ function resize_win(direction)
       local absolutef = screen:localToAbsolute(localf)
       win:setFrame(absolutef)
     end
-
-    if double_press then
-      prev_direction = ''
-    else
-      prev_direction = direction
+    if direction == "quarterleft" then
+      localf.x = 0 localf.y = 0 localf.w = max.w * 0.25 localf.h = max.h
+      local absolutef = screen:localToAbsolute(localf)
+      win:setFrame(absolutef)
+    end
+    if direction == "quarterright" then
+      localf.x = max.w * 0.75 localf.y = 0 localf.w = max.w * 0.25 localf.h = max.h
+      local absolutef = screen:localToAbsolute(localf)
+      win:setFrame(absolutef)
     end
   else
     hs.alert.show("No focused window!")
@@ -78,9 +73,11 @@ end
 resizeM:bind('', 'escape', function() resizeM:exit() end)
 
 resizeM:bind('', 'H', 'Left half of screen', function() resize_win('halfleft') end, nil, nil)
+resizeM:bind('shift', 'H', 'Left quarter of screen', function() resize_win('quarterleft') end, nil, nil)
 resizeM:bind('', 'J', 'Down half of screen', function() resize_win('halfdown') end, nil, nil)
 resizeM:bind('', 'K', 'Up half of screen', function() resize_win('halfup') end, nil, nil)
 resizeM:bind('', 'L', 'Right half of screen', function() resize_win('halfright') end, nil, nil)
+resizeM:bind('shift', 'L', 'Right quarter of screen', function() resize_win('quarterright') end, nil, nil)
 
 resizeM:bind('', 'F', 'Fullscreen', function()
   local win = hs.window.focusedWindow()

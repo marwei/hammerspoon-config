@@ -18,7 +18,8 @@ showhotkey_keys = {hyper, "H"}
 resizeM_keys = {hyper, "M"}
 appM_keys = {hyper, "space"}
 layoutM_keys = {hyper, "T"}
-autoM_keys = {hyper, "A"}
+autoM_keys = {hyper, "F"}
+cerebralM_keys = {hyper, "G"}
 toggleconsole_keys = {hyper, "Z"}
 
 hs.hotkey.bind(hsreload_keys[1], hsreload_keys[2], "Reload Configuration", function() hs.reload() end)
@@ -29,6 +30,7 @@ hs.hotkey.bind(resizeM_keys[1], resizeM_keys[2], 'Enter Resize Mode', function()
 hs.hotkey.bind(appM_keys[1], appM_keys[2], 'Enter App Launcher Mode', function() appM:enter() end)
 hs.hotkey.bind(layoutM_keys[1], layoutM_keys[2], 'Enter Layout Mode', function() layoutM:enter() end)
 hs.hotkey.bind(autoM_keys[1], autoM_keys[2], 'Enter Automation Mode', function() autoM:enter() end)
+hs.hotkey.bind(cerebralM_keys[1], cerebralM_keys[2], 'Enter Cerebral Mode', function() cerebralM:enter() end)
 
 globalGC = hs.timer.doEvery(180, collectgarbage)
 globalScreenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChanged)
@@ -42,3 +44,18 @@ globalScreenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChang
     if global_shortcuts_view then global_shortcuts_view:delete() global_shortcuts_view = nil end
   end
 end):start()
+
+-- Auto-reload configuration when files change
+configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", function(files)
+  local doReload = false
+  for _, file in pairs(files) do
+    if file:sub(-4) == ".lua" then
+      doReload = true
+    end
+  end
+  if doReload then
+    hs.reload()
+  end
+end):start()
+
+hs.alert.show("Config loaded")
