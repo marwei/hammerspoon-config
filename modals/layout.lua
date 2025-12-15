@@ -73,29 +73,43 @@ local function positionWindow(appName, xPercent, yPercent, wPercent, hPercent, t
 end
 
 layoutM:bind('', 'C', 'Cerebral Layout', function()
-  -- Obsidian on left half (0% to 50%), VSCode on right half (50% to 100%)
-  -- Note: VS Code's process name is "Code" not "Visual Studio Code"
-  -- Position on native Mac display
+  -- Browser on left half of ultrawide (0% to 50%), Obsidian on right half of ultrawide (50% to 100%)
+  -- iTerm full screen on built-in display
 
-  -- Get the native/built-in screen
-  local nativeScreen = getNativeScreen()
+  -- Get the primary screen (ultrawide)
+  local ultrawideScreen = hs.screen.primaryScreen()
 
-  -- Open VS Code with specific folder (will reuse existing window if already open)
-  local vscodeFolder = os.getenv("HOME") .. "/Desktop/Obsidian/work"
-  hs.task.new("/usr/bin/open", function() end, {"-a", "Visual Studio Code", vscodeFolder}):start()
+  -- Get the built-in screen
+  local builtinScreen = getNativeScreen()
 
-  positionWindow('Obsidian', 0, 0, 0.5, 1, nativeScreen, function()
-    positionWindow('Code', 0.5, 0, 0.5, 1, nativeScreen, function(vscodeWin)
-      -- Focus VS Code window after both are positioned
-      if vscodeWin then
-        vscodeWin:focus()
+  -- Get default browser
+  local defaultBrowser = hs.urlevent.getDefaultHandler('http')
+  local browserName = nil
 
-        -- Wait a bit for VS Code to be fully ready, then open Copilot chat in full-screen
-        hs.timer.doAfter(0.5, function()
-          -- Open Copilot Chat in full-screen with Ctrl+Cmd+C
-          hs.eventtap.keyStroke({"ctrl", "cmd"}, "c")
-        end)
-      end
+  if defaultBrowser then
+    local browserApp = hs.application.applicationsForBundleID(defaultBrowser)[1]
+    if browserApp then
+      browserName = browserApp:name()
+    end
+  end
+
+  if not browserName then
+    hs.alert.show("No default browser found")
+    layoutM:exit()
+    return
+  end
+
+  -- Position browser on left half of ultrawide
+  positionWindow(browserName, 0, 0, 0.5, 1, ultrawideScreen, function()
+    -- Position Obsidian on right half of ultrawide
+    positionWindow('Obsidian', 0.5, 0, 0.5, 1, ultrawideScreen, function()
+      -- Position iTerm full screen on built-in display
+      positionWindow('iTerm2', 0, 0, 1, 1, builtinScreen, function(itermWin)
+        -- Focus iTerm window after all are positioned
+        if itermWin then
+          itermWin:focus()
+        end
+      end)
     end)
   end)
   layoutM:exit()
