@@ -1,5 +1,8 @@
 cerebralM = hs.hotkey.modal.new()
 
+-- Path to OCR script
+local ocrScriptPath = os.getenv("HOME") .. "/.hammerspoon/lib/ocr.swift"
+
 -- Track clipboard changes for age detection
 local lastClipboardChange = hs.timer.secondsSinceEpoch()
 local lastClipboardContent = hs.pasteboard.getContents()
@@ -25,107 +28,240 @@ end
 
 cerebralM:bind('', 'escape', function() cerebralM:exit() end)
 
--- Helper function to capture text input (selection, screenshot OCR, or clipboard)
-local function captureInput(callback)
-  -- Store original clipboard content
+-- Helper function to show overlay menu for choosing input method
+local function showInputMethodMenu(callback, showClipboardAge)
   local originalClipboard = hs.pasteboard.getContents()
 
-  -- Try to copy selected text
+  -- Try to copy selected text first
   hs.eventtap.keyStroke({"cmd"}, "c")
 
   hs.timer.doAfter(0.2, function()
     local selectedText = hs.pasteboard.getContents()
+    local hasSelection = selectedText and selectedText ~= "" and selectedText ~= originalClipboard
 
-    -- Check if we got new content (different from original)
-    if selectedText and selectedText ~= "" and selectedText ~= originalClipboard then
-      callback(selectedText)
-    else
-      -- No selection, try screenshot with OCR
-      hs.alert.show("No selection - taking screenshot")
+    -- Build menu options
+    local options = {}
 
-      -- Use screencapture for interactive screenshot
-      local tempImagePath = os.tmpname() .. ".png"
-      local screencaptureTask = hs.task.new("/usr/sbin/screencapture", function(exitCode, stdOut, stdErr)
-        if exitCode == 0 then
-          -- Screenshot taken, now run OCR using shortcuts
-          hs.task.new("/usr/bin/shortcuts", function(ocrExitCode, ocrStdOut, ocrStdErr)
-            if ocrExitCode == 0 and ocrStdOut and ocrStdOut ~= "" then
-              -- Got OCR text
-              callback(ocrStdOut)
-            else
-              -- OCR failed or empty, fall back to original clipboard
-              hs.alert.show("No text in screenshot - using clipboard")
-              if originalClipboard and originalClipboard ~= "" then
-                callback(originalClipboard)
-              else
-                hs.alert.show("No content available")
-                callback("")
-              end
-            end
-            -- Clean up temp file
-            os.remove(tempImagePath)
-          end, {"run", "Extract Text from Image", "-i", tempImagePath}):start()
-        else
-          -- Screenshot cancelled or failed, use clipboard
-          if originalClipboard and originalClipboard ~= "" then
-            callback(originalClipboard)
-          else
-            callback("")
-          end
-        end
-      end, {"-i", "-s", tempImagePath}):start()
+    if hasSelection then
+      local preview = selectedText:gsub("\n", " "):sub(1, 60)
+      if #selectedText > 60 then preview = preview .. "..." end
+      table.insert(options, {
+        title = "Selected Text",
+        subtitle = preview,
+        method = "selection",
+        content = selectedText
+      })
     end
+
+    if originalClipboard and originalClipboard ~= "" then
+      local preview = originalClipboard:gsub("\n", " "):sub(1, 60)
+      if #originalClipboard > 60 then preview = preview .. "..." end
+      if showClipboardAge then
+        local clipboardAge = math.floor(hs.timer.secondsSinceEpoch() - lastClipboardChange)
+        preview = preview .. " (" .. clipboardAge .. "s ago)"
+      end
+      table.insert(options, {
+        title = "Clipboard",
+        subtitle = preview,
+        method = "clipboard",
+        content = originalClipboard
+      })
+    end
+
+    table.insert(options, {
+      title = "Screenshot",
+      subtitle = "Take interactive screenshot with OCR",
+      method = "screenshot",
+      content = nil
+    })
+
+    -- Create overlay on active screen
+    local screen = hs.mouse.getCurrentScreen()
+    local focusedWin = hs.window.focusedWindow()
+    if focusedWin then
+      screen = focusedWin:screen()
+    end
+    local frame = screen:frame()
+    local width = 500
+    local lineHeight = 60
+    local height = 100 + (#options * lineHeight) + 20  -- Extra space for ESC hint
+    local x = frame.x + (frame.w - width) / 2
+    local y = frame.y + (frame.h - height) / 2
+
+    local overlay = hs.canvas.new({x=x, y=y, w=width, h=height})
+    overlay:level(hs.canvas.windowLevels.overlay)
+
+    -- Background
+    overlay[1] = {
+      type = "rectangle",
+      action = "fill",
+      fillColor = {red=0.1, green=0.1, blue=0.15, alpha=0.95},
+      roundedRectRadii = {xRadius=12, yRadius=12}
+    }
+
+    -- Title
+    overlay[2] = {
+      type = "text",
+      text = "Choose Input Method",
+      textColor = {white=1, alpha=0.9},
+      textSize = 16,
+      textAlignment = "left",
+      frame = {x=20, y=15, w=width-40, h=30}
+    }
+
+    -- Separator
+    overlay[3] = {
+      type = "rectangle",
+      action = "fill",
+      fillColor = {white=1, alpha=0.1},
+      frame = {x=20, y=50, w=width-40, h=1}
+    }
+
+    -- Options
+    local idx = 4
+    for i, opt in ipairs(options) do
+      local optY = 65 + ((i-1) * lineHeight)
+
+      -- Option number and title
+      overlay[idx] = {
+        type = "text",
+        text = string.format("%d. %s", i, opt.title),
+        textColor = {white=1, alpha=1},
+        textSize = 14,
+        textAlignment = "left",
+        frame = {x=25, y=optY, w=width-50, h=22}
+      }
+      idx = idx + 1
+
+      -- Subtitle
+      overlay[idx] = {
+        type = "text",
+        text = opt.subtitle,
+        textColor = {white=1, alpha=0.6},
+        textSize = 11,
+        textAlignment = "left",
+        frame = {x=25, y=optY+22, w=width-50, h=18}
+      }
+      idx = idx + 1
+    end
+
+    -- Add ESC hint at bottom
+    local hintY = 65 + (#options * lineHeight) + 5
+    overlay[idx] = {
+      type = "text",
+      text = "Press ESC to skip content capture",
+      textColor = {white=1, alpha=0.4},
+      textSize = 10,
+      textAlignment = "center",
+      frame = {x=20, y=hintY, w=width-40, h=15}
+    }
+
+    overlay:show()
+
+    -- Keyboard event tap
+    local eventtap
+    eventtap = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(event)
+      local key = event:getCharacters()
+      local keyCode = event:getKeyCode()
+
+      -- Handle number keys
+      if key and tonumber(key) then
+        local num = tonumber(key)
+        if num >= 1 and num <= #options then
+          overlay:delete()
+          eventtap:stop()
+          local opt = options[num]
+          callback(opt.content, opt.method)
+          return true
+        end
+      end
+
+      -- Handle escape - skip content capture
+      if keyCode == 53 then  -- Escape key
+        overlay:delete()
+        eventtap:stop()
+        callback("", "skip")
+        return true
+      end
+
+      return false
+    end)
+    eventtap:start()
   end)
 end
 
--- Helper function for Record: selected text > recent clipboard > screenshot
-local function captureInputForRecord(callback)
-  local originalClipboard = hs.pasteboard.getContents()
-
-  -- Try to copy selected text
-  hs.eventtap.keyStroke({"cmd"}, "c")
-
-  hs.timer.doAfter(0.2, function()
-    local selectedText = hs.pasteboard.getContents()
-
-    -- Check if we got new selected text
-    if selectedText and selectedText ~= "" and selectedText ~= originalClipboard then
-      callback(selectedText)
-      return
-    end
-
-    -- No selection, check clipboard age
-    local clipboardAge = hs.timer.secondsSinceEpoch() - lastClipboardChange
-    local maxAge = 10 * 60  -- 10 minutes in seconds
-
-    if originalClipboard and originalClipboard ~= "" and clipboardAge < maxAge then
-      -- Clipboard is recent, use it
-      hs.alert.show("Using clipboard content")
-      callback(originalClipboard)
-    else
-      -- Clipboard is old or empty, take screenshot
-      hs.alert.show("Clipboard too old - taking screenshot")
-
+-- Helper function to capture text input - shows menu to choose input method
+local function captureInput(callback)
+  showInputMethodMenu(function(content, method)
+    if method == "skip" then
+      callback("")
+    elseif method == "screenshot" then
+      local alertId = hs.alert.show("Taking screenshot...", 999999)
       local tempImagePath = os.tmpname() .. ".png"
       hs.task.new("/usr/sbin/screencapture", function(exitCode, stdOut, stdErr)
         if exitCode == 0 then
-          -- Screenshot taken, now run OCR
-          hs.task.new("/usr/bin/shortcuts", function(ocrExitCode, ocrStdOut, ocrStdErr)
+          -- Screenshot taken, now run OCR using Vision framework
+          hs.alert.closeSpecific(alertId)
+          alertId = hs.alert.show("Processing OCR...", 999999)
+          hs.task.new("/usr/bin/swift", function(ocrExitCode, ocrStdOut, ocrStdErr)
+            hs.alert.closeSpecific(alertId)
             if ocrExitCode == 0 and ocrStdOut and ocrStdOut ~= "" then
+              hs.alert.show("Text extracted ✓", 1)
               callback(ocrStdOut)
             else
               hs.alert.show("No text in screenshot")
-              callback(originalClipboard or "")
+              callback("")
             end
             os.remove(tempImagePath)
-          end, {"run", "Extract Text from Image", "-i", tempImagePath}):start()
+          end, {ocrScriptPath, tempImagePath}):start()
         else
           -- Screenshot cancelled
-          callback(originalClipboard or "")
+          hs.alert.closeSpecific(alertId)
+          hs.alert.show("Screenshot cancelled")
+          callback("")
         end
       end, {"-i", "-s", tempImagePath}):start()
+    else
+      callback(content or "")
     end
-  end)
+  end, false)
+end
+
+-- Helper function for Record: shows menu to choose input method (with clipboard age)
+local function captureInputForRecord(callback)
+  showInputMethodMenu(function(content, method)
+    if method == "skip" then
+      callback("")
+    elseif method == "screenshot" then
+      local alertId = hs.alert.show("Taking screenshot...", 999999)
+      local tempImagePath = os.tmpname() .. ".png"
+      hs.task.new("/usr/sbin/screencapture", function(exitCode, stdOut, stdErr)
+        if exitCode == 0 then
+          -- Screenshot taken, now run OCR using Vision framework
+          hs.alert.closeSpecific(alertId)
+          alertId = hs.alert.show("Processing OCR...", 999999)
+          hs.task.new("/usr/bin/swift", function(ocrExitCode, ocrStdOut, ocrStdErr)
+            hs.alert.closeSpecific(alertId)
+            if ocrExitCode == 0 and ocrStdOut and ocrStdOut ~= "" then
+              hs.alert.show("Text extracted ✓", 1)
+              callback(ocrStdOut)
+            else
+              hs.alert.show("No text in screenshot")
+              callback("")
+            end
+            os.remove(tempImagePath)
+          end, {ocrScriptPath, tempImagePath}):start()
+        else
+          -- Screenshot cancelled
+          hs.alert.closeSpecific(alertId)
+          hs.alert.show("Screenshot cancelled")
+          callback("")
+        end
+      end, {"-i", "-s", tempImagePath}):start()
+    else
+      callback(content or "")
+    end
+  end, true)
 end
 
 -- Helper function to save content and open in VSCode
@@ -186,6 +322,10 @@ end
 cerebralM:bind('', 'R', 'Cerebral - Record', function()
   cerebralM:exit()
   captureInputForRecord(function(content)
+    if content == "" then
+      -- User cancelled by pressing ESC
+      return
+    end
     saveAndOpenVSCode(content, function()
       runVSCodeChat("agent", "LOG")
     end)
