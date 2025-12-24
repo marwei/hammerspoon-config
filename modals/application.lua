@@ -23,23 +23,65 @@ local function getNativeScreen()
   return hs.screen.primaryScreen()
 end
 
+-- Helper function to launch/focus app and bring all windows to front
+local function launchAndBringAllWindowsToFront(appName)
+  -- First launch or focus the application
+  hs.application.launchOrFocus(appName)
+
+  -- Then ensure all windows come to front
+  hs.timer.doAfter(0.1, function()
+    local app = hs.application.get(appName)
+    if app then
+      app:unhide()
+      app:activate()
+      -- Raise all windows to bring them to front
+      local windows = app:allWindows()
+      for _, win in ipairs(windows) do
+        win:raise()
+      end
+    end
+  end)
+end
+
+appM:bind('', 'A', 'Activity Monitor', function()
+  launchAndBringAllWindowsToFront('Activity Monitor')
+  appM:exit()
+end)
+
 appM:bind('', 'B', 'Browser (Default)', function()
   local defaultBrowser = hs.urlevent.getDefaultHandler('http')
   if defaultBrowser then
     hs.application.launchOrFocusByBundleID(defaultBrowser)
+    hs.timer.doAfter(0.1, function()
+      local app = hs.application.get(defaultBrowser)
+      if app then
+        app:unhide()
+        app:activate()
+        -- Raise all windows to bring them to front
+        local windows = app:allWindows()
+        for _, win in ipairs(windows) do
+          win:raise()
+        end
+      end
+    end)
   else
     hs.alert.show('No default browser found')
   end
   appM:exit()
 end)
 
-appM:bind('', 'O', 'Notes (Obsidian)', function()
-  hs.application.launchOrFocus('Obsidian')
+appM:bind('', 'W', 'Microsoft Word', function()
+  launchAndBringAllWindowsToFront('Microsoft Word')
+  appM:exit()
+end)
+
+appM:bind('', 'space', 'Notes (Obsidian)', function()
+  launchAndBringAllWindowsToFront('Obsidian')
   appM:exit()
 end)
 
 appM:bind('', 'I', 'Terminal (iTerm)', function()
-  hs.application.launchOrFocus('iTerm')
+  launchAndBringAllWindowsToFront('iTerm')
 
   -- Move iTerm to native screen and make it fullscreen
   hs.timer.doAfter(0.3, function()
@@ -69,7 +111,7 @@ appM:bind('', 'I', 'Terminal (iTerm)', function()
 end)
 
 appM:bind('', 'T', 'Microsoft Teams', function()
-  hs.application.launchOrFocus('Microsoft Teams')
+  launchAndBringAllWindowsToFront('Microsoft Teams')
   appM:exit()
 end)
 
@@ -79,7 +121,7 @@ appM:bind('', 'E', 'Email (Outlook/Gmail)', function()
 
   if file then
     file:close()
-    hs.application.launchOrFocus('Microsoft Outlook')
+    launchAndBringAllWindowsToFront('Microsoft Outlook')
   else
     hs.urlevent.openURL('https://mail.google.com')
   end
@@ -88,7 +130,7 @@ appM:bind('', 'E', 'Email (Outlook/Gmail)', function()
 end)
 
 appM:bind('', 'V', 'VSCode', function()
-  hs.application.launchOrFocus('Visual Studio Code')
+  launchAndBringAllWindowsToFront('Visual Studio Code')
   appM:exit()
 end)
 
@@ -106,7 +148,7 @@ end
 local loopPath = '/Users/wei/Applications/Edge Apps.localized/Microsoft Loop.app'
 if appExists(loopPath) then
   appM:bind('', 'L', 'Microsoft Loop', function()
-    hs.application.launchOrFocus('Microsoft Loop')
+    launchAndBringAllWindowsToFront('Microsoft Loop')
     appM:exit()
   end)
 end
@@ -115,7 +157,7 @@ end
 local granolaPath = '/Applications/Granola.app'
 if appExists(granolaPath) then
   appM:bind('', 'G', 'Granola', function()
-    hs.application.launchOrFocus('Granola')
+    launchAndBringAllWindowsToFront('Granola')
     appM:exit()
   end)
 end

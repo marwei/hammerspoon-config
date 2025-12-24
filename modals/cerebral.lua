@@ -369,33 +369,62 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
           margin: 0;
           padding: 20px;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(2px) saturate(180%);
+          -webkit-backdrop-filter: blur(2px) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.8);
           display: flex;
           flex-direction: column;
           height: 100vh;
           box-sizing: border-box;
         }
         h2 {
-          color: white;
+          color: rgba(0, 0, 0, 0.85);
           margin: 0 0 15px 0;
           font-size: 20px;
           font-weight: 600;
+          letter-spacing: -0.3px;
+        }
+        .textarea-container {
+          flex: 1;
+          position: relative;
         }
         textarea {
-          flex: 1;
           width: 100%;
+          height: 100%;
           padding: 12px;
           font-size: 14px;
-          border: none;
-          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          border-radius: 16px;
           resize: none;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(2px) saturate(180%);
+          -webkit-backdrop-filter: blur(2px) saturate(180%);
+          box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
           box-sizing: border-box;
+          color: rgba(0, 0, 0, 0.85);
+          position: relative;
+        }
+        textarea::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border-radius: 16px;
+          box-shadow: inset 0 0 2000px rgba(255, 255, 255, 0.5);
+          filter: blur(1px) drop-shadow(10px 4px 6px black) brightness(115%);
+          opacity: 0.6;
+          pointer-events: none;
         }
         textarea:focus {
           outline: none;
-          box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+          border-color: rgba(0, 122, 255, 0.8);
+          box-shadow: 0 8px 32px rgba(0, 122, 255, 0.25),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
+        }
+        textarea::placeholder {
+          color: rgba(0, 0, 0, 0.3);
         }
         .buttons {
           margin-top: 15px;
@@ -406,26 +435,46 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
         button {
           padding: 8px 20px;
           font-size: 14px;
-          border: none;
-          border-radius: 6px;
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          border-radius: 16px;
           cursor: pointer;
           font-weight: 500;
-          transition: all 0.2s;
+          transition: all 0.15s ease;
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(2px) saturate(180%);
+          -webkit-backdrop-filter: blur(2px) saturate(180%);
+          box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
+          position: relative;
         }
         #submit {
-          background: white;
-          color: #667eea;
+          background: rgba(0, 122, 255, 0.2);
+          border-color: rgba(0, 122, 255, 0.8);
+          color: rgba(0, 0, 0, 0.85);
         }
         #submit:hover {
+          background: rgba(0, 122, 255, 0.25);
           transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+          box-shadow: 0 12px 40px rgba(0, 122, 255, 0.3),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
+        }
+        #submit:active {
+          transform: translateY(0);
+          box-shadow: 0 4px 16px rgba(0, 122, 255, 0.2),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
         }
         #cancel {
-          background: rgba(255,255,255,0.2);
-          color: white;
+          color: rgba(0, 0, 0, 0.7);
         }
         #cancel:hover {
-          background: rgba(255,255,255,0.3);
+          background: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 12px 40px rgba(31, 38, 135, 0.25),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
+        }
+        #cancel:active {
+          background: rgba(255, 255, 255, 0.1);
+          box-shadow: 0 4px 16px rgba(31, 38, 135, 0.15),
+                      inset 0 4px 20px rgba(255, 255, 255, 0.3);
         }
       </style>
     </head>
@@ -478,6 +527,11 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
   end)
 
   inputDialog:bringToFront():show()
+
+  -- Focus the webview and trigger textarea focus
+  hs.timer.doAfter(0.1, function()
+    inputDialog:hswindow():focus()
+  end)
 end)
 
 cerebralM:bind('', 'E', 'Cerebral - Respond Email', function()

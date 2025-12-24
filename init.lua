@@ -29,13 +29,13 @@ hs.hotkey.bind(toggleconsole_keys[1], toggleconsole_keys[2], 'Toggle Hammerspoon
 hs.hotkey.bind(resizeM_keys[1], resizeM_keys[2], 'Enter Resize Mode', function() resizeM:enter() end)
 hs.hotkey.bind(appM_keys[1], appM_keys[2], 'Enter App Launcher Mode', function() appM:enter() end)
 hs.hotkey.bind(layoutM_keys[1], layoutM_keys[2], 'Enter Layout Mode', function() layoutM:enter() end)
-hs.hotkey.bind(autoM_keys[1], autoM_keys[2], 'Enter Automation Mode', function() autoM:enter() end)
+hs.hotkey.bind(autoM_keys[1], autoM_keys[2], 'Show Workflow Chooser', function() showWorkflowChooser() end)
 hs.hotkey.bind(cerebralM_keys[1], cerebralM_keys[2], 'Enter Cerebral Mode', function() cerebralM:enter() end)
 
 globalGC = hs.timer.doEvery(180, collectgarbage)
 globalScreenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChanged)
   if activeChanged then
-    clipshowclear()
+    -- clipshowclear() -- function doesn't exist
     if modal_tray then modal_tray:delete() modal_tray = nil end
     if hotkeytext then hotkeytext:delete() hotkeytext = nil end
     if hotkeybg then hotkeybg:delete() hotkeybg = nil end
