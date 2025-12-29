@@ -48,7 +48,7 @@ appM:bind('', 'A', 'Activity Monitor', function()
   appM:exit()
 end)
 
-appM:bind('', 'return', 'Browser (Default)', function()
+appM:bind('', 'space', 'Browser (Default)', function()
   local defaultBrowser = hs.urlevent.getDefaultHandler('http')
   if defaultBrowser then
     hs.application.launchOrFocusByBundleID(defaultBrowser)
@@ -75,7 +75,7 @@ appM:bind('', 'W', 'Microsoft Word', function()
   appM:exit()
 end)
 
-appM:bind('', 'space', 'Notes (Obsidian)', function()
+appM:bind('', 'tab', 'Notes (Obsidian)', function()
   launchAndBringAllWindowsToFront('Obsidian')
   appM:exit()
 end)
