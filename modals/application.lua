@@ -48,7 +48,7 @@ appM:bind('', 'A', 'Activity Monitor', function()
   appM:exit()
 end)
 
-appM:bind('', 'B', 'Browser (Default)', function()
+appM:bind('', 'return', 'Browser (Default)', function()
   local defaultBrowser = hs.urlevent.getDefaultHandler('http')
   if defaultBrowser then
     hs.application.launchOrFocusByBundleID(defaultBrowser)

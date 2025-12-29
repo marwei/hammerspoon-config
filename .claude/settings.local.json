@@ -9,7 +9,8 @@
       "WebFetch(domain:www.hammerspoon.org)",
       "Bash(git commit:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nUpdate Cerebral layout to use browser and iTerm across dual screens\n\nChange Cerebral layout from Obsidian/VSCode on single screen to:\n- Browser (default) on left half of ultrawide\n- Obsidian on right half of ultrawide  \n- iTerm full screen on built-in display\n\nFocus switches to iTerm after positioning all windows.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
