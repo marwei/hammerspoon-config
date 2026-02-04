@@ -316,6 +316,16 @@ appM:bind('', 'V', 'VSCode', function()
   appM:exit()
 end)
 
+appM:bind('', 'P', 'Photos', function()
+  launchAndBringAllWindowsToFront('Photos')
+  appM:exit()
+end)
+
+appM:bind('', 'F', 'Autodesk Fusion', function()
+  launchAndBringAllWindowsToFront('Autodesk Fusion')
+  appM:exit()
+end)
+
 -- Helper function to check if app exists
 local function appExists(path)
   local file = io.open(path .. '/Contents/Info.plist', 'r')

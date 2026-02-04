@@ -8,7 +8,7 @@ applist = {
     {shortcut = 'c',appname = 'ChatGPT'},
     {shortcut = 'r',appname = 'Replit'},
     {shortcut = ';',appname = 'Postman'},
-    {shortcut = 'f',appname = 'Figma'},
+    {shortcut = 'f',appname = 'Autodesk Fusion'},
     {shortcut = 'return',appname = 'Telegram'}
 }
 
