@@ -319,33 +319,10 @@ local function runVSCodeChat(mode, prompt)
   end)
 end
 
-cerebralM:bind('', 'R', 'Cerebral - Record', function()
-  cerebralM:exit()
-  captureInputForRecord(function(content)
-    if content == "" then
-      -- User cancelled by pressing ESC
-      return
-    end
-    saveAndOpenVSCode(content, function()
-      runVSCodeChat("agent", "LOG")
-    end)
-  end)
-end)
-
-cerebralM:bind('', 'T', 'Cerebral - Todo', function()
-  cerebralM:exit()
-  captureInput(function(content)
-    saveAndOpenVSCode(content, function()
-      runVSCodeChat("agent", "TODO")
-    end)
-  end)
-end)
-
-cerebralM:bind('', 'A', 'Cerebral - Ask', function()
-  cerebralM:exit()
-
-  -- Create a larger input dialog using webview
-  local activeScreen = hs.screen.mainScreen()  -- Gets screen with keyboard focus
+-- Helper function to show text input dialog with glassmorphism UI
+local function showTextInputDialog(dialogTitle, placeholderText, callback)
+  -- Create dialog on active screen
+  local activeScreen = hs.screen.mainScreen()
   local screenFrame = activeScreen:frame()
   local width = 600
   local height = 300
@@ -360,7 +337,7 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
   -- Poll for button clicks using title changes
   local checkTimer = nil
 
-  inputDialog:html([[
+  inputDialog:html(string.format([[
     <!DOCTYPE html>
     <html>
     <head>
@@ -370,8 +347,8 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
           padding: 20px;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(2px) saturate(180%);
-          -webkit-backdrop-filter: blur(2px) saturate(180%);
+          backdrop-filter: blur(2px) saturate(180%%);
+          -webkit-backdrop-filter: blur(2px) saturate(180%%);
           border: 1px solid rgba(255, 255, 255, 0.8);
           display: flex;
           flex-direction: column;
@@ -390,8 +367,8 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
           position: relative;
         }
         textarea {
-          width: 100%;
-          height: 100%;
+          width: 100%%;
+          height: 100%%;
           padding: 12px;
           font-size: 14px;
           border: 1px solid rgba(255, 255, 255, 0.8);
@@ -399,8 +376,8 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
           resize: none;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(2px) saturate(180%);
-          -webkit-backdrop-filter: blur(2px) saturate(180%);
+          backdrop-filter: blur(2px) saturate(180%%);
+          -webkit-backdrop-filter: blur(2px) saturate(180%%);
           box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
                       inset 0 4px 20px rgba(255, 255, 255, 0.3);
           box-sizing: border-box;
@@ -413,7 +390,7 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
           inset: 0;
           border-radius: 16px;
           box-shadow: inset 0 0 2000px rgba(255, 255, 255, 0.5);
-          filter: blur(1px) drop-shadow(10px 4px 6px black) brightness(115%);
+          filter: blur(1px) drop-shadow(10px 4px 6px black) brightness(115%%);
           opacity: 0.6;
           pointer-events: none;
         }
@@ -441,8 +418,8 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
           font-weight: 500;
           transition: all 0.15s ease;
           background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(2px) saturate(180%);
-          -webkit-backdrop-filter: blur(2px) saturate(180%);
+          backdrop-filter: blur(2px) saturate(180%%);
+          -webkit-backdrop-filter: blur(2px) saturate(180%%);
           box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2),
                       inset 0 4px 20px rgba(255, 255, 255, 0.3);
           position: relative;
@@ -479,8 +456,8 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
       </style>
     </head>
     <body>
-      <h2>Cerebral - Ask</h2>
-      <textarea id="input" placeholder="Enter your question..." autofocus></textarea>
+      <h2>%s</h2>
+      <textarea id="input" placeholder="%s" autofocus></textarea>
       <div class="buttons">
         <button id="cancel" onclick="document.title='CANCEL'">Cancel</button>
         <button id="submit" onclick="document.title='SUBMIT:' + document.getElementById('input').value">Submit</button>
@@ -504,7 +481,7 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
       </script>
     </body>
     </html>
-  ]])
+  ]], dialogTitle, placeholderText))
 
   -- Monitor title changes
   checkTimer = hs.timer.doEvery(0.1, function()
@@ -512,17 +489,12 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
     if title and title:match("^SUBMIT:") then
       checkTimer:stop()
       local text = title:gsub("^SUBMIT:", "")
-      if text and text ~= "" then
-        inputDialog:delete()
-        captureInput(function(content)
-          saveAndOpenVSCode(content, function()
-            runVSCodeChat("ask", text)
-          end)
-        end)
-      end
+      inputDialog:delete()
+      callback(text)
     elseif title == "CANCEL" then
       checkTimer:stop()
       inputDialog:delete()
+      callback(nil)
     end
   end)
 
@@ -532,6 +504,68 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
   hs.timer.doAfter(0.1, function()
     inputDialog:hswindow():focus()
   end)
+end
+
+cerebralM:bind('', 'R', 'Cerebral - Record', function()
+  cerebralM:exit()
+
+  -- STEP 1: Show input method selection menu
+  captureInputForRecord(function(content)
+    if content == "" then
+      -- User cancelled content capture at input method selection
+      return
+    end
+
+    -- STEP 2: Show text input dialog AFTER content is captured
+    showTextInputDialog(
+      "What would you like to do with this content?",
+      "Enter additional instructions (optional)",
+      function(userText)
+        if not userText then
+          -- User cancelled prompt dialog by pressing ESC
+          return
+        end
+
+        -- STEP 3: Build prompt - always use "LOG", append user text if provided
+        local prompt = "LOG"
+        if userText ~= "" then
+          prompt = "LOG\n" .. userText
+        end
+
+        -- STEP 4: Proceed with VSCode workflow
+        saveAndOpenVSCode(content, function()
+          runVSCodeChat("agent", prompt)
+        end)
+      end
+    )
+  end)
+end)
+
+cerebralM:bind('', 'T', 'Cerebral - Todo', function()
+  cerebralM:exit()
+  captureInput(function(content)
+    saveAndOpenVSCode(content, function()
+      runVSCodeChat("agent", "TODO")
+    end)
+  end)
+end)
+
+cerebralM:bind('', 'A', 'Cerebral - Ask', function()
+  cerebralM:exit()
+
+  showTextInputDialog(
+    "Cerebral - Ask",
+    "Enter your question...",
+    function(text)
+      if text and text ~= "" then
+        captureInput(function(content)
+          saveAndOpenVSCode(content, function()
+            runVSCodeChat("ask", text)
+          end)
+        end)
+      end
+    end
+  )
 end)
 
 cerebralM:bind('', 'E', 'Cerebral - Respond Email', function()
@@ -548,6 +582,44 @@ cerebralM:bind('', 'M', 'Cerebral - Respond Teams', function()
   captureInput(function(content)
     saveAndOpenVSCode(content, function()
       runVSCodeChat("ask", "TEAMS")
+    end)
+  end)
+end)
+
+cerebralM:bind('', 'O', 'Cerebral - Outlook Email to LOG', function()
+  cerebralM:exit()
+
+  -- Check if Outlook is running
+  local outlookApp = hs.application.get("Microsoft Outlook")
+  if not outlookApp then
+    hs.alert.show("Outlook is not running")
+    return
+  end
+
+  -- Activate Outlook
+  outlookApp:activate()
+  hs.timer.doAfter(0.3, function()
+    -- Open the email in its own window (just "O" in Outlook)
+    hs.eventtap.keyStroke({}, "o")
+    hs.timer.doAfter(0.5, function()
+      -- Select all and copy
+      hs.eventtap.keyStroke({"cmd"}, "a")
+      hs.timer.doAfter(0.1, function()
+        hs.eventtap.keyStroke({"cmd"}, "c")
+        hs.timer.doAfter(0.2, function()
+          local content = hs.pasteboard.getContents()
+          if content and content ~= "" then
+            hs.alert.show("Processing Outlook email...")
+            -- Close the email window
+            hs.eventtap.keyStroke({"cmd"}, "w")
+            saveAndOpenVSCode(content, function()
+              runVSCodeChat("agent", "LOG")
+            end)
+          else
+            hs.alert.show("No content copied from Outlook")
+          end
+        end)
+      end)
     end)
   end)
 end)

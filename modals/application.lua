@@ -326,6 +326,56 @@ local function appExists(path)
   return false
 end
 
+appM:bind('', 'return', 'Telegram', function()
+  local currentApp = hs.application.frontmostApplication()
+  local targetApp = hs.application.get('Telegram')
+
+  local isSameApp = targetApp and currentApp and
+                    (targetApp:bundleID() == currentApp:bundleID() or
+                     targetApp:name() == currentApp:name())
+
+  if isSameApp then
+    local windows = targetApp:allWindows()
+    local visibleWindows = {}
+    for _, win in ipairs(windows) do
+      if win:isVisible() and win:isStandard() then
+        table.insert(visibleWindows, win)
+      end
+    end
+
+    if #visibleWindows > 1 then
+      local focusedWin = hs.window.focusedWindow()
+      local currentIndex = 1
+      for i, win in ipairs(visibleWindows) do
+        if win:id() == focusedWin:id() then
+          currentIndex = i
+          break
+        end
+      end
+      local nextIndex = (currentIndex % #visibleWindows) + 1
+      visibleWindows[nextIndex]:focus()
+    end
+  else
+    launchAndBringAllWindowsToFront('Telegram')
+
+    hs.timer.doAfter(0.3, function()
+      local app = hs.application.get('Telegram')
+      if app then
+        local win = app:mainWindow()
+        if win then
+          local nativeScreen = getNativeScreen()
+          win:moveToScreen(nativeScreen, false, true, 0)
+          hs.timer.doAfter(0.2, function()
+            win:focus()
+          end)
+        end
+      end
+    end)
+  end
+
+  appM:exit()
+end)
+
 -- Conditionally bind Microsoft Loop if it exists
 local loopPath = '/Users/wei/Applications/Edge Apps.localized/Microsoft Loop.app'
 if appExists(loopPath) then
