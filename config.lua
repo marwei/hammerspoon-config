@@ -1,16 +1,18 @@
-applist = {
-    {shortcut = 'i',appname = 'iTerm'},
-    {shortcut = 'c',appname = 'Google Chrome'},
-    {shortcut = 'w',appname = 'Wechat'},
-    {shortcut = 'p',appname = 'Pycharm'},
-    {shortcut = 's',appname = 'Slack'},
-    {shortcut = 'n',appname = 'Notion'},
-    {shortcut = 'c',appname = 'ChatGPT'},
-    {shortcut = 'r',appname = 'Replit'},
-    {shortcut = ';',appname = 'Postman'},
-    {shortcut = 'f',appname = 'Autodesk Fusion'},
-    {shortcut = 'return',appname = 'Telegram'}
-}
+-- Application modal shortcuts reference (actual bindings in modals/application.lua)
+-- A     → Activity Monitor
+-- E     → Email (Outlook/Gmail)
+-- F     → Autodesk Fusion
+-- G     → Granola (conditional)
+-- I     → Terminal (iTerm)
+-- L     → Microsoft Loop (conditional)
+-- P     → Photos
+-- S     → Slack
+-- T     → Microsoft Teams
+-- V     → VSCode
+-- W     → Microsoft Word
+-- tab   → Notes (Obsidian)
+-- space → Browser (Default)
+-- return→ Telegram
 
 module_list = {
     "modals/window",

@@ -326,6 +326,11 @@ appM:bind('', 'F', 'Autodesk Fusion', function()
   appM:exit()
 end)
 
+appM:bind('', 'S', 'Slack', function()
+  launchAndFocusApp('Slack')
+  appM:exit()
+end)
+
 -- Helper function to check if app exists
 local function appExists(path)
   local file = io.open(path .. '/Contents/Info.plist', 'r')
