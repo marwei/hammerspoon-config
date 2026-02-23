@@ -25,18 +25,20 @@ This is a Hammerspoon configuration for macOS automation and window management. 
 - This is a critical system component - be careful when modifying as bugs can cause stuck modifiers
 
 **Configuration (`config.lua`)**
-- Defines `applist` array with application shortcuts
 - Defines `module_list` array specifying which modal modules to load
 - Controls `show_modal` flag for visual feedback
 - Defines `background_jobs` table for background automation framework configuration
+- Application shortcuts are documented as comments; actual bindings live in `modals/application.lua`
 
 ### Modal Systems
 
 The configuration uses Hammerspoon modals for different contexts:
 
 **Application Modal (`modals/application.lua`)**
-- Activated by Hyper+A (must be bound in config)
-- Launches or focuses applications based on `applist` in config.lua
+- Activated by Hyper+Space
+- Uses `launchAndFocusApp(appName, opts)` helper for all bindings
+- `opts` table supports: `bundleID`, `bringAllWindows`, `screen` ("native"/"external"), `resize` (direction string)
+- Smart window cycling: if target app is already focused, cycles to next window
 - Shows green modal light when active
 - Auto-exits after launching an app
 
@@ -46,20 +48,17 @@ The configuration uses Hammerspoon modals for different contexts:
 - Shows red modal light (firebrick) when active
 - Key features:
   - Basic positioning: H (left half), L (right half), J (down half), K (up half)
-  - Corners: W (NW), E (NE), S (SW), D (SE)
-  - Double-press H or L for quarter-width windows
-  - Fullscreen (F), center (C), floating center (Shift+C)
-  - Incremental resize: = (expand), - (shrink)
-  - Incremental move: Shift+HJKL
-  - Multi-monitor: arrow keys or space to move between displays
-  - Window cycling: [ and ] to focus other windows
-  - Cursor centering: ` to center cursor in window
-- Maintains state in `prev_direction` for double-press detection
+  - Quarter-width: Shift+H (left quarter), Shift+L (right quarter)
+  - Fullscreen (F), center (C) — both delegate to `resize_win()`
+  - Multi-monitor: arrow keys to move between displays
+- All resize/position logic lives in `resize_win(direction)` and `move_win(direction)` functions
 
 **Modal Display System (`lib/modal_display.lua`)**
 - `toggle_modal_light(color, alpha)`: Shows/hides a circular indicator in top-right corner
 - `toggle_modal_key_display()`: Shows/hides hotkey cheatsheet overlay
-- Both functions are toggles - calling again removes the display
+- `show_global_shortcuts()`: Shows/hides global shortcuts overlay
+- Internal helpers: `createCheatsheetCanvas(title, heightRatio, contentBuilder)` and `renderShortcutGrid()` handle shared canvas boilerplate
+- All functions are toggles — calling again removes the display
 
 ### Fn Key Navigation (`fn.lua`)
 
@@ -270,7 +269,13 @@ end
 
 ### Libraries
 
-**Style (`lib/style.lua`)**: Color constants using Hammerspoon drawing color APIs
+**Screens (`lib/screens.lua`)**: Shared screen detection utilities
+- `getNativeScreen()`: Returns the built-in/native Mac display (matches "Built-in" or "Color LCD")
+- `getUltraWideScreen()`: Returns the external display (first non-built-in screen)
+- Both fall back to `hs.screen.primaryScreen()` if no match found
+- Used by `modals/application.lua` and `modals/layout.lua`
+
+**Style (`lib/style.lua`)**: Color constants using Hammerspoon drawing color APIs (includes `cyan`)
 
 **Utility (`lib/utility.lua`)**: Helper functions like `is_in()` and `print_table()`
 
@@ -282,14 +287,30 @@ end
 2. Press Hyper+R (or Cmd+Alt+Shift+Ctrl+R) to reload configuration
 3. Check console (Hyper+Z) for any errors
 
+### Automated Tests
+
+Run `lua tests/run_all.lua` from the project root. Requires `lua` (install via `brew install lua`).
+
+Tests validate:
+- **test_config.lua**: `module_list` files exist, no duplicates, `background_jobs` well-formed, `show_modal` is boolean
+- **test_modules.lua**: All library globals exported correctly, `hotkey_filtered` is local (not leaked), color globals including `cyan`
+- **test_application_modal.lua**: All expected key bindings exist, no duplicates, all bindings have labels
+- **test_window_modal.lua**: All expected key bindings exist, F/C bindings call `resize_win()` (not inline), functions defined
+
+The test suite uses `tests/hs_mock.lua` which stubs Hammerspoon APIs so modules can load outside of Hammerspoon. Mock modals track registered bindings for inspection.
+
 ### Adding New Applications
 
-Edit `applist` in `config.lua`:
+Add a new binding directly in `modals/application.lua`:
 ```lua
-applist = {
-    {shortcut = 'i', appname = 'iTerm'},
-    -- add new entry
-}
+appM:bind('', 'X', 'App Name', function()
+  launchAndFocusApp('App Name', {
+    -- Optional: bringAllWindows = true,
+    -- Optional: screen = "native" or "external",
+    -- Optional: resize = "halfleft", "fullscreen", etc.
+  })
+  appM:exit()
+end)
 ```
 
 ### Adding New Modals
@@ -315,6 +336,7 @@ For automated workflows that run in the background (no user interaction needed):
 
 ### Debugging
 
+- Run `lua tests/run_all.lua` to validate config and module structure
 - Use `print()` statements (output goes to Hammerspoon console)
 - Access console with Hyper+Z
 - Use `hs.alert.show("message")` for temporary on-screen alerts
@@ -325,9 +347,10 @@ For automated workflows that run in the background (no user interaction needed):
 ### Global Variables
 
 Global variables are used throughout for state management:
-- Modal objects: `appM`, `resizeM`
-- Display objects: `modal_light`, `hotkeytext`, `hotkeybg`, `modal_tray`, etc.
-- State: `prev_direction`, `resize_win_list`, `resize_current_winnum`
+- Modal objects: `appM`, `resizeM`, `layoutM`, `cerebralM`
+- Functions: `resize_win()`, `move_win()`, `getNativeScreen()`, `getUltraWideScreen()`, `toggle_modal_light()`, `toggle_modal_key_display()`, `show_global_shortcuts()`
+- Display objects: `modal_light`, `cheatsheet_view`, `global_shortcuts_view`, `modal_tray`, etc.
+- Color globals: `white`, `black`, `firebrick`, `lawngreen`, `cyan`, `dodgerblue`, etc. (defined in `lib/style.lua`)
 - Timers/watchers: `globalGC`, `globalScreenWatcher`, `fn_tapper`
 - Background jobs: `background_jobs_state` (framework state), `_G.background_jobs_utils` (shared utilities)
 

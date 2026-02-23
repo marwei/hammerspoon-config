@@ -12,19 +12,6 @@ end
 
 layoutM:bind('', 'escape', function() layoutM:exit() end)
 
--- Helper function to get the built-in/native Mac display
-local function getNativeScreen()
-  -- Try to find the built-in screen
-  local allScreens = hs.screen.allScreens()
-  for _, screen in ipairs(allScreens) do
-    if screen:name():match("Built%-in") or screen:name():match("Color LCD") then
-      return screen
-    end
-  end
-  -- Fall back to primary screen if built-in not found
-  return hs.screen.primaryScreen()
-end
-
 -- Helper function to position a window
 local function positionWindow(appName, xPercent, yPercent, wPercent, hPercent, targetScreen, callback)
   -- Launch or focus the app first

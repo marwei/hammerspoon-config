@@ -106,54 +106,8 @@ resizeM:bind('', 'K', 'Up half of screen', function() resize_win('halfup') end, 
 resizeM:bind('', 'L', 'Right half of screen', function() resize_win('halfright') end, nil, nil)
 resizeM:bind('shift', 'L', 'Right quarter of screen', function() resize_win('quarterright') end, nil, nil)
 
-resizeM:bind('', 'F', 'Fullscreen', function()
-  local win = hs.window.focusedWindow()
-  if win then
-    local screen = win:screen()
-    local max = screen:fullFrame()
-    local localf = {}
-    localf.x = 0
-    localf.y = 0
-    localf.w = max.w
-    localf.h = max.h
-    local absolutef = screen:localToAbsolute(localf)
-    win:setFrame(absolutef, 0)
-  else
-    hs.alert.show("No focused window!")
-  end
-end, nil, nil)
-
-resizeM:bind('', 'C', 'Center window', function()
-  local win = hs.window.focusedWindow()
-  if win then
-    local screen = win:screen()
-    local max = screen:fullFrame()
-    local localf = {}
-
-    -- Check if ultra-wide (aspect ratio > 2.0)
-    local aspectRatio = max.w / max.h
-    local isUltraWide = aspectRatio > 2.0
-
-    if isUltraWide then
-      -- Ultra-wide: center 50% (25% to 75%)
-      localf.w = max.w * 0.5
-      localf.h = max.h
-      localf.x = max.w * 0.25
-      localf.y = 0
-    else
-      -- Regular screen: 90% of full screen, centered
-      localf.w = max.w * 0.9
-      localf.h = max.h * 0.9
-      localf.x = (max.w - localf.w) / 2
-      localf.y = (max.h - localf.h) / 2
-    end
-
-    local absolutef = screen:localToAbsolute(localf)
-    win:setFrame(absolutef, 0)
-  else
-    hs.alert.show("No focused window!")
-  end
-end, nil, nil)
+resizeM:bind('', 'F', 'Fullscreen', function() resize_win('fullscreen') end, nil, nil)
+resizeM:bind('', 'C', 'Center window', function() resize_win('center') end, nil, nil)
 
 resizeM:bind('', 'up', 'Move to monitor above', function() move_win('up') end, nil, nil)
 resizeM:bind('', 'down', 'Move to monitor below', function() move_win('down') end, nil, nil)

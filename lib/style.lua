@@ -12,6 +12,7 @@ lightseagreen = hs.drawing.color.x11.lightseagreen
 purple = hs.drawing.color.x11.purple
 royalblue = hs.drawing.color.x11.royalblue
 sandybrown = hs.drawing.color.x11.sandybrown
+cyan = hs.drawing.color.x11.cyan
 white90 = {red=0,blue=0,green=0,alpha=0.5}
 black50 = {red=0,blue=0,green=0,alpha=0.5}
 darkblue = {red=24/255,blue=195/255,green=145/255,alpha=1}

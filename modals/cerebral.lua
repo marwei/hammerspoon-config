@@ -191,7 +191,8 @@ local function showInputMethodMenu(callback, showClipboardAge)
 end
 
 -- Helper function to capture text input - shows menu to choose input method
-local function captureInput(callback)
+-- Set showClipboardAge to true to display clipboard age (used by Record)
+local function captureInput(callback, showClipboardAge)
   showInputMethodMenu(function(content, method)
     if method == "skip" then
       callback("")
@@ -200,7 +201,6 @@ local function captureInput(callback)
       local tempImagePath = os.tmpname() .. ".png"
       hs.task.new("/usr/sbin/screencapture", function(exitCode, stdOut, stdErr)
         if exitCode == 0 then
-          -- Screenshot taken, now run OCR using Vision framework
           hs.alert.closeSpecific(alertId)
           alertId = hs.alert.show("Processing OCR...", 999999)
           hs.task.new("/usr/bin/swift", function(ocrExitCode, ocrStdOut, ocrStdErr)
@@ -215,7 +215,6 @@ local function captureInput(callback)
             os.remove(tempImagePath)
           end, {ocrScriptPath, tempImagePath}):start()
         else
-          -- Screenshot cancelled
           hs.alert.closeSpecific(alertId)
           hs.alert.show("Screenshot cancelled")
           callback("")
@@ -224,44 +223,7 @@ local function captureInput(callback)
     else
       callback(content or "")
     end
-  end, false)
-end
-
--- Helper function for Record: shows menu to choose input method (with clipboard age)
-local function captureInputForRecord(callback)
-  showInputMethodMenu(function(content, method)
-    if method == "skip" then
-      callback("")
-    elseif method == "screenshot" then
-      local alertId = hs.alert.show("Taking screenshot...", 999999)
-      local tempImagePath = os.tmpname() .. ".png"
-      hs.task.new("/usr/sbin/screencapture", function(exitCode, stdOut, stdErr)
-        if exitCode == 0 then
-          -- Screenshot taken, now run OCR using Vision framework
-          hs.alert.closeSpecific(alertId)
-          alertId = hs.alert.show("Processing OCR...", 999999)
-          hs.task.new("/usr/bin/swift", function(ocrExitCode, ocrStdOut, ocrStdErr)
-            hs.alert.closeSpecific(alertId)
-            if ocrExitCode == 0 and ocrStdOut and ocrStdOut ~= "" then
-              hs.alert.show("Text extracted ✓", 1)
-              callback(ocrStdOut)
-            else
-              hs.alert.show("No text in screenshot")
-              callback("")
-            end
-            os.remove(tempImagePath)
-          end, {ocrScriptPath, tempImagePath}):start()
-        else
-          -- Screenshot cancelled
-          hs.alert.closeSpecific(alertId)
-          hs.alert.show("Screenshot cancelled")
-          callback("")
-        end
-      end, {"-i", "-s", tempImagePath}):start()
-    else
-      callback(content or "")
-    end
-  end, true)
+  end, showClipboardAge or false)
 end
 
 -- Helper function to save content and open in VSCode
@@ -509,8 +471,8 @@ end
 cerebralM:bind('', 'R', 'Cerebral - Record', function()
   cerebralM:exit()
 
-  -- STEP 1: Show input method selection menu
-  captureInputForRecord(function(content)
+  -- STEP 1: Show input method selection menu (with clipboard age)
+  captureInput(function(content)
     if content == "" then
       -- User cancelled content capture at input method selection
       return
@@ -538,7 +500,7 @@ cerebralM:bind('', 'R', 'Cerebral - Record', function()
         end)
       end
     )
-  end)
+  end, true)
 end)
 
 cerebralM:bind('', 'T', 'Cerebral - Todo', function()

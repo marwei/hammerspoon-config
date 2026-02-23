@@ -1,4 +1,5 @@
 require('lib/style')
+require('lib/screens')
 require('lib/modal_display')
 require('lib/utility')
 require('hyper')
@@ -35,7 +36,6 @@ hs.hotkey.bind(cerebralM_keys[1], cerebralM_keys[2], 'Enter Cerebral Mode', func
 globalGC = hs.timer.doEvery(180, collectgarbage)
 globalScreenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChanged)
   if activeChanged then
-    -- clipshowclear() -- function doesn't exist
     if modal_tray then modal_tray:delete() modal_tray = nil end
     if hotkeytext then hotkeytext:delete() hotkeytext = nil end
     if hotkeybg then hotkeybg:delete() hotkeybg = nil end
