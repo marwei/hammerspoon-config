@@ -66,4 +66,20 @@ test("each background job has required fields", function()
   end
 end)
 
+test("app_shortcuts is a non-empty table", function()
+  assert(type(app_shortcuts) == "table", "app_shortcuts should be a table")
+  assert(#app_shortcuts > 0, "app_shortcuts should not be empty")
+end)
+
+test("app_shortcuts entries have required fields and no duplicate keys", function()
+  local seen = {}
+  for i, s in ipairs(app_shortcuts) do
+    assert(type(s.key) == "string", "entry " .. i .. " missing 'key'")
+    assert(type(s.app) == "string" or type(s.url) == "string",
+      "entry " .. i .. " missing 'app' or 'url'")
+    assert(not seen[s.key], "duplicate shortcut key: " .. s.key)
+    seen[s.key] = true
+  end
+end)
+
 return passed, failed

@@ -1,18 +1,49 @@
--- Application modal shortcuts reference (actual bindings in modals/application.lua)
--- A     → Activity Monitor
--- E     → Email (Outlook/Gmail)
--- F     → Autodesk Fusion
--- G     → Granola (conditional)
--- I     → Terminal (iTerm)
--- L     → Microsoft Loop (conditional)
--- P     → Photos
--- S     → Slack
--- T     → Microsoft Teams
--- V     → VSCode
--- W     → Microsoft Word
--- tab   → Notes (Obsidian)
--- space → Browser (Default)
--- return→ Telegram
+local hostname = hs.host.localizedName()
+
+-- Default application shortcuts (used when hostname has no override)
+-- Each entry: {key, app, label (optional, defaults to app)}
+-- Optional fields: bringAllWindows, screen ("native"/"external"), resize (direction)
+-- For URL-based shortcuts: {key, url, label}
+app_shortcuts = {
+  {key = 'A', app = 'Activity Monitor'},
+  {key = 'space', app = 'Safari', label = 'Browser'},
+  {key = 'W', app = 'Microsoft Word'},
+  {key = 'return', app = 'Obsidian', label = 'Notes (Obsidian)'},
+  {key = 'I', app = 'iTerm', label = 'Terminal (iTerm)',
+    bringAllWindows = true, screen = 'native', resize = 'fullscreen_native'},
+  {key = 'T', app = 'Slack', label = 'Chat'},
+  {key = 'E', app = 'Microsoft Outlook', label = 'Email'},
+  {key = 'V', app = 'Visual Studio Code', label = 'VSCode'},
+  {key = 'P', app = 'Photos', bringAllWindows = true},
+  {key = 'F', app = 'Autodesk Fusion', bringAllWindows = true},
+  {key = 'S', app = 'Slack'},
+  {key = 'tab', app = 'Telegram',
+    bringAllWindows = true, screen = 'native'},
+  {key = 'G', app = 'Granola',
+    bringAllWindows = true, screen = 'external', resize = 'quarterright'},
+  {key = 'L', app = 'Microsoft Loop'},
+}
+
+-- Per-hostname overrides (completely replaces the default table)
+local app_shortcuts_by_host = {
+  ["Wei's Personal Air"] = {
+    {key = 'A', app = 'Activity Monitor'},
+    {key = 'space', app = 'Google Chrome', label = 'Browser'},
+    {key = 'return', app = 'Obsidian', label = 'Notes (Obsidian)'},
+    {key = 'I', app = 'iTerm', label = 'Terminal (iTerm)',
+      bringAllWindows = true, screen = 'native', resize = 'fullscreen_native'},
+    {key = 'T', app = 'Slack'},
+    {key = 'V', app = 'Visual Studio Code', label = 'VSCode'},
+    {key = 'tab', app = 'Telegram',
+      bringAllWindows = true, screen = 'native'},
+    {key = 'M', app = 'Messages'},
+  },
+  -- ["Work-Laptop"] = { ... },
+}
+
+if app_shortcuts_by_host[hostname] then
+  app_shortcuts = app_shortcuts_by_host[hostname]
+end
 
 module_list = {
     "modals/window",

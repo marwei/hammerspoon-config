@@ -197,6 +197,11 @@ mock.urlevent = {
   openURL = function(...) end,
 }
 
+-- hs.host
+mock.host = {
+  localizedName = function() return "Test-Machine" end,
+}
+
 -- hs.webview
 mock.webview = {
   new = function(...) return chainable() end,

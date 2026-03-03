@@ -28,7 +28,7 @@ This is a Hammerspoon configuration for macOS automation and window management. 
 - Defines `module_list` array specifying which modal modules to load
 - Controls `show_modal` flag for visual feedback
 - Defines `background_jobs` table for background automation framework configuration
-- Application shortcuts are documented as comments; actual bindings live in `modals/application.lua`
+- Defines `app_shortcuts` table with hostname-keyed overrides (drives `modals/application.lua` bindings)
 
 ### Modal Systems
 
@@ -36,8 +36,9 @@ The configuration uses Hammerspoon modals for different contexts:
 
 **Application Modal (`modals/application.lua`)**
 - Activated by Hyper+Space
-- Uses `launchAndFocusApp(appName, opts)` helper for all bindings
-- `opts` table supports: `bundleID`, `bringAllWindows`, `screen` ("native"/"external"), `resize` (direction string)
+- Bindings driven by `app_shortcuts` table in `config.lua` (hostname-keyed overrides supported)
+- Uses `launchAndFocusApp(appName, opts)` helper; opts: `bringAllWindows`, `screen` ("native"/"external"), `resize` (direction)
+- Supports URL-based shortcuts via `url` field (opens in browser instead of launching app)
 - Smart window cycling: if target app is already focused, cycles to next window
 - Shows green modal light when active
 - Auto-exits after launching an app
@@ -292,26 +293,22 @@ end
 Run `lua tests/run_all.lua` from the project root. Requires `lua` (install via `brew install lua`).
 
 Tests validate:
-- **test_config.lua**: `module_list` files exist, no duplicates, `background_jobs` well-formed, `show_modal` is boolean
+- **test_config.lua**: `module_list` files exist, no duplicates, `background_jobs` well-formed, `app_shortcuts` well-formed, `show_modal` is boolean
 - **test_modules.lua**: All library globals exported correctly, `hotkey_filtered` is local (not leaked), color globals including `cyan`
-- **test_application_modal.lua**: All expected key bindings exist, no duplicates, all bindings have labels
+- **test_application_modal.lua**: Bindings match `app_shortcuts` config, no duplicates, labels match config
 - **test_window_modal.lua**: All expected key bindings exist, F/C bindings call `resize_win()` (not inline), functions defined
 
 The test suite uses `tests/hs_mock.lua` which stubs Hammerspoon APIs so modules can load outside of Hammerspoon. Mock modals track registered bindings for inspection.
 
 ### Adding New Applications
 
-Add a new binding directly in `modals/application.lua`:
+Add an entry to `app_shortcuts` in `config.lua`:
 ```lua
-appM:bind('', 'X', 'App Name', function()
-  launchAndFocusApp('App Name', {
-    -- Optional: bringAllWindows = true,
-    -- Optional: screen = "native" or "external",
-    -- Optional: resize = "halfleft", "fullscreen", etc.
-  })
-  appM:exit()
-end)
+{key = 'X', app = 'App Name', label = 'Optional Label',
+  bringAllWindows = true, screen = "native", resize = "fullscreen"},
 ```
+For URL-based shortcuts: `{key = 'X', url = 'https://...', label = 'Label'}`.
+For per-machine differences, add a complete override table to `app_shortcuts_by_host`.
 
 ### Adding New Modals
 

@@ -17,20 +17,13 @@ appM:bind('', 'escape', function() appM:exit() end)
 -- If target app is already active: cycle to next window
 --
 -- opts (optional table):
---   bundleID       - launch by bundle ID instead of name (e.g. for default browser)
 --   bringAllWindows - raise all windows after launch (for Telegram, Photos, etc.)
 --   screen         - target screen: "native" or "external"
 --   resize         - resize direction after positioning (e.g. "halfleft", "fullscreen")
 local function launchAndFocusApp(appName, opts)
   opts = opts or {}
   local currentApp = hs.application.frontmostApplication()
-  local targetApp
-
-  if opts.bundleID then
-    targetApp = hs.application.get(opts.bundleID)
-  else
-    targetApp = hs.application.get(appName)
-  end
+  local targetApp = hs.application.get(appName)
 
   -- Check if target app is already running and is the current app
   local isSameApp = targetApp and currentApp and
@@ -61,20 +54,11 @@ local function launchAndFocusApp(appName, opts)
     end
   else
     -- Different app: launch/focus
-    if opts.bundleID then
-      hs.application.launchOrFocusByBundleID(opts.bundleID)
-    else
-      hs.application.launchOrFocus(appName)
-    end
+    hs.application.launchOrFocus(appName)
 
     local delay = (opts.screen or opts.resize or opts.bringAllWindows) and 0.3 or 0.1
     hs.timer.doAfter(delay, function()
-      local app
-      if opts.bundleID then
-        app = hs.application.get(opts.bundleID)
-      else
-        app = hs.application.get(appName)
-      end
+      local app = hs.application.get(appName)
       if not app then return end
 
       app:unhide()
@@ -134,115 +118,19 @@ local function launchAndFocusApp(appName, opts)
   end
 end
 
--- Helper function to check if app exists
-local function appExists(path)
-  local file = io.open(path .. '/Contents/Info.plist', 'r')
-  if file then
-    file:close()
-    return true
-  end
-  return false
-end
-
-appM:bind('', 'A', 'Activity Monitor', function()
-  launchAndFocusApp('Activity Monitor')
-  appM:exit()
-end)
-
-appM:bind('', 'space', 'Browser (Default)', function()
-  local defaultBrowser = hs.urlevent.getDefaultHandler('http')
-  if defaultBrowser then
-    launchAndFocusApp(nil, {bundleID = defaultBrowser})
-  else
-    hs.alert.show('No default browser found')
-  end
-  appM:exit()
-end)
-
-appM:bind('', 'W', 'Microsoft Word', function()
-  launchAndFocusApp('Microsoft Word')
-  appM:exit()
-end)
-
-appM:bind('', 'return', 'Notes (Obsidian)', function()
-  launchAndFocusApp('Obsidian')
-  appM:exit()
-end)
-
-appM:bind('', 'I', 'Terminal (iTerm)', function()
-  launchAndFocusApp('iTerm', {
-    bringAllWindows = true,
-    screen = "native",
-    resize = "fullscreen_native",
-  })
-  appM:exit()
-end)
-
-appM:bind('', 'T', 'Microsoft Teams', function()
-  launchAndFocusApp('Microsoft Teams')
-  appM:exit()
-end)
-
-appM:bind('', 'E', 'Email (Outlook/Gmail)', function()
-  local outlookPath = '/Applications/Microsoft Outlook.app'
-  local file = io.open(outlookPath .. '/Contents/Info.plist', 'r')
-
-  if file then
-    file:close()
-    launchAndFocusApp('Microsoft Outlook')
-  else
-    hs.urlevent.openURL('https://mail.google.com')
-  end
-
-  appM:exit()
-end)
-
-appM:bind('', 'V', 'VSCode', function()
-  launchAndFocusApp('Visual Studio Code')
-  appM:exit()
-end)
-
-appM:bind('', 'P', 'Photos', function()
-  launchAndFocusApp('Photos', {bringAllWindows = true})
-  appM:exit()
-end)
-
-appM:bind('', 'F', 'Autodesk Fusion', function()
-  launchAndFocusApp('Autodesk Fusion', {bringAllWindows = true})
-  appM:exit()
-end)
-
-appM:bind('', 'S', 'Slack', function()
-  launchAndFocusApp('Slack')
-  appM:exit()
-end)
-
-appM:bind('', 'tab', 'Telegram', function()
-  launchAndFocusApp('Telegram', {
-    bringAllWindows = true,
-    screen = "native",
-  })
-  appM:exit()
-end)
-
--- Conditionally bind Microsoft Loop if it exists
-local loopPath = os.getenv("HOME") .. '/Applications/Edge Apps.localized/Microsoft Loop.app'
-if appExists(loopPath) then
-  appM:bind('', 'L', 'Microsoft Loop', function()
-    launchAndFocusApp('Microsoft Loop')
-    appM:exit()
-  end)
-end
-
--- Conditionally bind Granola if it exists
-local granolaPath = '/Applications/Granola.app'
-if appExists(granolaPath) then
-  appM:bind('', 'G', 'Granola', function()
-    launchAndFocusApp('Granola', {
-      bringAllWindows = true,
-      screen = "external",
-      resize = "quarterright",
-    })
+-- Bind shortcuts from config
+for _, s in ipairs(app_shortcuts) do
+  local label = s.label or s.app
+  appM:bind('', s.key, label, function()
+    if s.url then
+      hs.urlevent.openURL(s.url)
+    else
+      launchAndFocusApp(s.app, {
+        bringAllWindows = s.bringAllWindows,
+        screen = s.screen,
+        resize = s.resize,
+      })
+    end
     appM:exit()
   end)
 end

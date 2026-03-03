@@ -46,21 +46,23 @@ local function hasBinding(key)
   return false
 end
 
-local function getBinding(key)
-  for _, b in ipairs(appM._bindings) do
-    if b.key == key then return b end
+test("bindings match app_shortcuts config", function()
+  -- One binding per app_shortcuts entry plus escape
+  local expectedCount = #app_shortcuts + 1
+  assert(#appM._bindings == expectedCount,
+    "expected " .. expectedCount .. " bindings, got " .. #appM._bindings)
+end)
+
+test("escape binding exists", function()
+  assert(hasBinding('escape'), "missing escape binding")
+end)
+
+test("all app_shortcuts keys have bindings", function()
+  for _, s in ipairs(app_shortcuts) do
+    assert(hasBinding(s.key), "missing binding for key: " .. s.key)
   end
-  return nil
-end
+end)
 
-local expected_keys = {'A', 'E', 'F', 'I', 'P', 'S', 'T', 'V', 'W', 'tab', 'space', 'return', 'escape'}
-for _, key in ipairs(expected_keys) do
-  test("binding exists for key: " .. key, function()
-    assert(hasBinding(key), "missing binding for key: " .. key)
-  end)
-end
-
--- Conditional bindings (L and G) may or may not exist depending on installed apps
 test("no duplicate key bindings", function()
   local seen = {}
   for _, b in ipairs(appM._bindings) do
@@ -76,6 +78,27 @@ test("all bindings have descriptive labels", function()
       assert(b.label ~= nil and b.label ~= "",
         "binding for key '" .. b.key .. "' missing label")
     end
+  end
+end)
+
+test("labels match config", function()
+  for _, s in ipairs(app_shortcuts) do
+    local expectedLabel = s.label or s.app
+    for _, b in ipairs(appM._bindings) do
+      if b.key == s.key then
+        assert(b.label == expectedLabel,
+          "key '" .. s.key .. "': expected label '" .. expectedLabel ..
+          "', got '" .. tostring(b.label) .. "'")
+        break
+      end
+    end
+  end
+end)
+
+test("app_shortcuts entries have required fields", function()
+  for i, s in ipairs(app_shortcuts) do
+    assert(s.key, "entry " .. i .. " missing 'key'")
+    assert(s.app or s.url, "entry " .. i .. " missing 'app' or 'url'")
   end
 end)
 
