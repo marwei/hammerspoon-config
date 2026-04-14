@@ -22,6 +22,7 @@ app_shortcuts = {
   {key = 'G', app = 'Granola',
     bringAllWindows = true, screen = 'external', resize = 'quarterright'},
   {key = 'L', app = 'Microsoft Loop'},
+  {key = 'C', app = 'Claude'},
 }
 
 -- Per-hostname overrides (completely replaces the default table)
@@ -37,8 +38,25 @@ local app_shortcuts_by_host = {
     {key = 'tab', app = 'Telegram',
       bringAllWindows = true, screen = 'native'},
     {key = 'M', app = 'Messages'},
+    {key = 'C', app = 'Claude'},
   },
-  -- ["Work-Laptop"] = { ... },
+  ["Work Air"] = {
+    {key = 'A', app = 'Activity Monitor'},
+    {key = 'space', app = 'Microsoft Edge', label = 'Browser'},
+    {key = 'W', app = 'Microsoft Word'},
+    {key = 'return', app = 'Obsidian', label = 'Notes (Obsidian)'},
+    {key = 'I', app = 'iTerm', label = 'Terminal (iTerm)',
+      bringAllWindows = true, screen = 'native', resize = 'fullscreen_native'},
+    {key = 'T', app = 'Microsoft Teams', label = 'Chat'},
+    {key = 'E', app = 'Microsoft Outlook', label = 'Email'},
+    {key = 'V', app = 'Visual Studio Code', label = 'VSCode'},
+    {key = 'tab', app = 'Telegram',
+      bringAllWindows = true, screen = 'native'},
+    {key = 'G', app = 'Granola',
+      bringAllWindows = true, screen = 'external', resize = 'quarterright'},
+    {key = 'L', app = 'Microsoft Loop'},
+    {key = 'C', app = 'Claude'},
+  },
 }
 
 if app_shortcuts_by_host[hostname] then

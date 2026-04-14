@@ -14,7 +14,11 @@
       "Bash(defaults read:*)",
       "Bash(brew list:*)",
       "Bash(bash:*)",
-      "Bash(which convert:*)"
+      "Bash(which convert:*)",
+      "Bash(find:*)",
+      "WebSearch",
+      "Bash(system_profiler:*)",
+      "Bash(osascript:*)"
     ],
     "deny": [],
     "ask": []
