@@ -22,7 +22,12 @@ appM:bind('', 'escape', function() appM:exit() end)
 local function launchAndFocusApp(appName, opts)
   opts = opts or {}
   local currentApp = hs.application.frontmostApplication()
-  local targetApp = hs.application.get(appName)
+  -- Prefer bundleID lookup: it's a direct match, whereas name lookup
+  -- iterates all running apps and queries each via AX (slow on apps
+  -- whose CFBundleName differs from their display name, e.g. VSCode).
+  local targetApp = opts.bundleID
+    and hs.application.applicationsForBundleID(opts.bundleID)[1]
+    or hs.application.get(appName)
 
   -- Finder special case: ensure at least one window exists, open Desktop
   if appName == "Finder" then
@@ -71,11 +76,29 @@ local function launchAndFocusApp(appName, opts)
     end
   else
     -- Different app: launch/focus
-    hs.application.launchOrFocus(appName)
+    local wasRunning = targetApp ~= nil
+    local needsPositioning = opts.screen or opts.resize or opts.bringAllWindows
 
-    local delay = (opts.screen or opts.resize or opts.bringAllWindows) and 0.3 or 0.1
+    -- Fast path: app already running with no special positioning.
+    -- Skip the timer + mainWindow()/allWindows() scan, which is slow on
+    -- Electron apps like VSCode that have many helper windows.
+    if wasRunning and not needsPositioning then
+      targetApp:unhide()
+      targetApp:activate()
+      return
+    end
+
+    if opts.bundleID then
+      hs.application.launchOrFocusByBundleID(opts.bundleID)
+    else
+      hs.application.launchOrFocus(appName)
+    end
+
+    local delay = needsPositioning and 0.3 or 0.1
     hs.timer.doAfter(delay, function()
-      local app = hs.application.get(appName)
+      local app = opts.bundleID
+        and hs.application.applicationsForBundleID(opts.bundleID)[1]
+        or hs.application.get(appName)
       if not app then return end
 
       app:unhide()
@@ -144,6 +167,7 @@ for _, s in ipairs(app_shortcuts) do
       hs.urlevent.openURL(s.url)
     else
       launchAndFocusApp(s.app, {
+        bundleID = s.bundleID,
         bringAllWindows = s.bringAllWindows,
         screen = s.screen,
         resize = s.resize,
