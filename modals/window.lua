@@ -48,18 +48,15 @@ function resize_win(direction)
       win:setFrame(absolutef, 0)
     end
     if direction == "center" then
-      -- Check if ultra-wide (aspect ratio > 2.0)
       local aspectRatio = max.w / max.h
       local isUltraWide = aspectRatio > 2.0
 
       if isUltraWide then
-        -- Ultra-wide: center 50% (25% to 75%)
         localf.w = max.w * 0.5
         localf.h = max.h
         localf.x = max.w * 0.25
         localf.y = 0
       else
-        -- Regular screen: 90% of full screen, centered
         localf.w = max.w * 0.9
         localf.h = max.h * 0.9
         localf.x = (max.w - localf.w) / 2
@@ -86,31 +83,40 @@ function move_win(direction)
 end
 
 resizeM = hs.hotkey.modal.new()
+resizeM.name = "Resize"
 
 function resizeM:entered()
-  toggle_modal_light(firebrick,0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(resizeM) end
 end
 
 function resizeM:exited()
-  toggle_modal_light(firebrick,0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(resizeM) end
 end
 
 resizeM:bind('', 'escape', function() resizeM:exit() end)
+resizeM:bind(hyper, 'escape', function() resizeM:exit() end)
 
-resizeM:bind('', 'H', 'Left half of screen', function() resize_win('halfleft') end, nil, nil)
-resizeM:bind('shift', 'H', 'Left quarter of screen', function() resize_win('quarterleft') end, nil, nil)
-resizeM:bind('', 'J', 'Down half of screen', function() resize_win('halfdown') end, nil, nil)
-resizeM:bind('', 'K', 'Up half of screen', function() resize_win('halfup') end, nil, nil)
-resizeM:bind('', 'L', 'Right half of screen', function() resize_win('halfright') end, nil, nil)
-resizeM:bind('shift', 'L', 'Right quarter of screen', function() resize_win('quarterright') end, nil, nil)
+resizeM.items = {
+  {key = "H", label = "Left half",          icon = "lucide:panel-left",   action = function() resize_win('halfleft') end},
+  {key = "L", label = "Right half",         icon = "lucide:panel-right",  action = function() resize_win('halfright') end},
+  {key = "K", label = "Top half",           icon = "lucide:panel-top",    action = function() resize_win('halfup') end},
+  {key = "J", label = "Bottom half",        icon = "lucide:panel-bottom", action = function() resize_win('halfdown') end},
+  {key = "H", mod = "⇧", label = "Left quarter",  icon = "lucide:panel-left",  action = function() resize_win('quarterleft') end,  modKey = "shift"},
+  {key = "L", mod = "⇧", label = "Right quarter", icon = "lucide:panel-right", action = function() resize_win('quarterright') end, modKey = "shift"},
+  {key = "F", label = "Fullscreen",         icon = "lucide:square",       action = function() resize_win('fullscreen') end},
+  {key = "C", label = "Center",             icon = "lucide:circle-dot",   action = function() resize_win('center') end},
+  {key = "up",    label = "Move to monitor above", icon = "lucide:arrow-up",    action = function() move_win('up') end},
+  {key = "down",  label = "Move to monitor below", icon = "lucide:arrow-down",  action = function() move_win('down') end},
+  {key = "left",  label = "Move to monitor left",  icon = "lucide:arrow-left",  action = function() move_win('left') end},
+  {key = "right", label = "Move to monitor right", icon = "lucide:arrow-right", action = function() move_win('right') end},
+}
 
-resizeM:bind('', 'F', 'Fullscreen', function() resize_win('fullscreen') end, nil, nil)
-resizeM:bind('', 'C', 'Center window', function() resize_win('center') end, nil, nil)
+for _, it in ipairs(resizeM.items) do
+  local mod = it.modKey or ''
+  resizeM:bind(mod, it.key, it.label, it.action)
+  if mod == '' then
+    resizeM:bind(hyper, it.key, it.action)
+  end
+end
 
-resizeM:bind('', 'up', 'Move to monitor above', function() move_win('up') end, nil, nil)
-resizeM:bind('', 'down', 'Move to monitor below', function() move_win('down') end, nil, nil)
-resizeM:bind('', 'left', 'Move to monitor left', function() move_win('left') end, nil, nil)
-resizeM:bind('', 'right', 'Move to monitor right', function() move_win('right') end, nil, nil)
-
+require('lib/icons').prewarm(resizeM.items)

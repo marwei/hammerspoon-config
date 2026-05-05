@@ -1,4 +1,5 @@
 cerebralM = hs.hotkey.modal.new()
+cerebralM.name = "Cerebral"
 
 -- Path to OCR script
 local ocrScriptPath = os.getenv("HOME") .. "/.hammerspoon/lib/ocr.swift"
@@ -17,16 +18,15 @@ local clipboardWatcher = hs.timer.doEvery(1, function()
 end)
 
 function cerebralM:entered()
-  toggle_modal_light(cyan, 0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(cerebralM) end
 end
 
 function cerebralM:exited()
-  toggle_modal_light(cyan, 0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(cerebralM) end
 end
 
 cerebralM:bind('', 'escape', function() cerebralM:exit() end)
+cerebralM:bind(hyper, 'escape', function() cerebralM:exit() end)
 
 -- Helper function to show overlay menu for choosing input method
 local function showInputMethodMenu(callback, showClipboardAge)
@@ -468,7 +468,7 @@ local function showTextInputDialog(dialogTitle, placeholderText, callback)
   end)
 end
 
-cerebralM:bind('', 'R', 'Cerebral - Record', function()
+local function cerebralRecord()
   cerebralM:exit()
 
   -- STEP 1: Show input method selection menu (with clipboard age)
@@ -501,18 +501,22 @@ cerebralM:bind('', 'R', 'Cerebral - Record', function()
       end
     )
   end, true)
-end)
+end
+cerebralM:bind('', 'R', 'Cerebral - Record', cerebralRecord)
+cerebralM:bind(hyper, 'R', cerebralRecord)
 
-cerebralM:bind('', 'T', 'Cerebral - Todo', function()
+local function cerebralTodo()
   cerebralM:exit()
   captureInput(function(content)
     saveAndOpenVSCode(content, function()
       runVSCodeChat("agent", "TODO")
     end)
   end)
-end)
+end
+cerebralM:bind('', 'T', 'Cerebral - Todo', cerebralTodo)
+cerebralM:bind(hyper, 'T', cerebralTodo)
 
-cerebralM:bind('', 'A', 'Cerebral - Ask', function()
+local function cerebralAsk()
   cerebralM:exit()
 
   showTextInputDialog(
@@ -528,27 +532,33 @@ cerebralM:bind('', 'A', 'Cerebral - Ask', function()
       end
     end
   )
-end)
+end
+cerebralM:bind('', 'A', 'Cerebral - Ask', cerebralAsk)
+cerebralM:bind(hyper, 'A', cerebralAsk)
 
-cerebralM:bind('', 'E', 'Cerebral - Respond Email', function()
+local function cerebralEmail()
   cerebralM:exit()
   captureInput(function(content)
     saveAndOpenVSCode(content, function()
       runVSCodeChat("ask", "EMAIL")
     end)
   end)
-end)
+end
+cerebralM:bind('', 'E', 'Cerebral - Respond Email', cerebralEmail)
+cerebralM:bind(hyper, 'E', cerebralEmail)
 
-cerebralM:bind('', 'M', 'Cerebral - Respond Teams', function()
+local function cerebralTeams()
   cerebralM:exit()
   captureInput(function(content)
     saveAndOpenVSCode(content, function()
       runVSCodeChat("ask", "TEAMS")
     end)
   end)
-end)
+end
+cerebralM:bind('', 'M', 'Cerebral - Respond Teams', cerebralTeams)
+cerebralM:bind(hyper, 'M', cerebralTeams)
 
-cerebralM:bind('', 'O', 'Cerebral - Outlook Email to LOG', function()
+local function cerebralOutlook()
   cerebralM:exit()
 
   -- Check if Outlook is running
@@ -584,4 +594,17 @@ cerebralM:bind('', 'O', 'Cerebral - Outlook Email to LOG', function()
       end)
     end)
   end)
-end)
+end
+cerebralM:bind('', 'O', 'Cerebral - Outlook Email to LOG', cerebralOutlook)
+cerebralM:bind(hyper, 'O', cerebralOutlook)
+
+cerebralM.items = {
+  {key = "R", label = "Record",                icon = "lucide:mic"},
+  {key = "T", label = "Todo",                  icon = "lucide:check-square"},
+  {key = "A", label = "Ask",                   icon = "lucide:help-circle"},
+  {key = "E", label = "Respond to Email",      icon = "lucide:mail"},
+  {key = "M", label = "Respond to Teams",      icon = "lucide:messages-square"},
+  {key = "O", label = "Outlook Email → LOG",   icon = "lucide:inbox"},
+}
+
+require('lib/icons').prewarm(cerebralM.items)

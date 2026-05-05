@@ -38,19 +38,27 @@ test("appM has bindings", function()
   assert(#appM._bindings > 0, "appM should have bindings")
 end)
 
--- Check expected bindings exist
+-- Check expected bindings exist (only bare-modifier bindings, skip hyper duplicates)
+local function isHyperMod(mods)
+  return type(mods) == "table" and #mods == 4
+end
+
 local function hasBinding(key)
   for _, b in ipairs(appM._bindings) do
-    if b.key == key then return true end
+    if b.key == key and not isHyperMod(b.mods) then return true end
   end
   return false
 end
 
 test("bindings match app_shortcuts config", function()
-  -- One binding per app_shortcuts entry plus escape
+  -- One binding per app_shortcuts entry plus escape (ignore hyper duplicates)
+  local bareCount = 0
+  for _, b in ipairs(appM._bindings) do
+    if not isHyperMod(b.mods) then bareCount = bareCount + 1 end
+  end
   local expectedCount = #app_shortcuts + 1
-  assert(#appM._bindings == expectedCount,
-    "expected " .. expectedCount .. " bindings, got " .. #appM._bindings)
+  assert(bareCount == expectedCount,
+    "expected " .. expectedCount .. " bindings, got " .. bareCount)
 end)
 
 test("escape binding exists", function()
@@ -66,7 +74,8 @@ end)
 test("no duplicate key bindings", function()
   local seen = {}
   for _, b in ipairs(appM._bindings) do
-    local id = (b.mods or "") .. "+" .. b.key
+    local modStr = type(b.mods) == "table" and table.concat(b.mods, "+") or tostring(b.mods or "")
+    local id = modStr .. "+" .. b.key
     assert(not seen[id], "duplicate binding: " .. id)
     seen[id] = true
   end
@@ -74,7 +83,8 @@ end)
 
 test("all bindings have descriptive labels", function()
   for _, b in ipairs(appM._bindings) do
-    if b.key ~= "escape" then
+    -- Only check bare-modifier bindings; hyper duplicates don't need labels
+    if b.key ~= "escape" and not isHyperMod(b.mods) then
       assert(b.label ~= nil and b.label ~= "",
         "binding for key '" .. b.key .. "' missing label")
     end

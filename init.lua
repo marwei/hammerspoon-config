@@ -30,7 +30,7 @@ hs.hotkey.bind(toggleconsole_keys[1], toggleconsole_keys[2], 'Toggle Hammerspoon
 hs.hotkey.bind(resizeM_keys[1], resizeM_keys[2], 'Enter Resize Mode', function() resizeM:enter() end)
 hs.hotkey.bind(appM_keys[1], appM_keys[2], 'Enter App Launcher Mode', function() appM:enter() end)
 hs.hotkey.bind(layoutM_keys[1], layoutM_keys[2], 'Enter Layout Mode', function() layoutM:enter() end)
-hs.hotkey.bind(autoM_keys[1], autoM_keys[2], 'Show Workflow Chooser', function() showWorkflowChooser() end)
+hs.hotkey.bind(autoM_keys[1], autoM_keys[2], 'Enter Workflow Mode', function() autoM:enter() end)
 hs.hotkey.bind(cerebralM_keys[1], cerebralM_keys[2], 'Enter Cerebral Mode', function() cerebralM:enter() end)
 
 globalGC = hs.timer.doEvery(180, collectgarbage)
@@ -40,8 +40,7 @@ globalScreenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChang
     if hotkeytext then hotkeytext:delete() hotkeytext = nil end
     if hotkeybg then hotkeybg:delete() hotkeybg = nil end
     if time_draw then time_draw:delete() time_draw = nil end
-    if cheatsheet_view then cheatsheet_view:delete() cheatsheet_view = nil end
-    if global_shortcuts_view then global_shortcuts_view:delete() global_shortcuts_view = nil end
+    if cleanup_cheatsheet_view then cleanup_cheatsheet_view() end
   end
 end):start()
 
@@ -57,5 +56,7 @@ configFileWatcher = hs.pathwatcher.new(os.getenv("HOME") .. "/.hammerspoon/", fu
     hs.reload()
   end
 end):start()
+
+require('lib/cheatsheet_view').prewarm()
 
 hs.alert.show("Config loaded")

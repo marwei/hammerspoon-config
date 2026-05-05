@@ -56,10 +56,6 @@ test("getUltraWideScreen returns a screen object", function()
 end)
 
 -- Modal display tests
-test("toggle_modal_light is a global function", function()
-  assert(type(toggle_modal_light) == "function", "toggle_modal_light should be a global function")
-end)
-
 test("toggle_modal_key_display is a global function", function()
   assert(type(toggle_modal_key_display) == "function", "toggle_modal_key_display should be a global function")
 end)

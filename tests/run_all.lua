@@ -53,7 +53,6 @@ for _, test_module in ipairs(test_files) do
   _G.background_jobs = nil
   _G.resize_win = nil
   _G.move_win = nil
-  _G.toggle_modal_light = nil
   _G.toggle_modal_key_display = nil
   _G.show_global_shortcuts = nil
   _G.getNativeScreen = nil
@@ -62,7 +61,6 @@ for _, test_module in ipairs(test_files) do
   _G.print_table = nil
   _G.cheatsheet_view = nil
   _G.global_shortcuts_view = nil
-  _G.modal_light = nil
   -- Color globals
   _G.white = nil
   _G.black = nil

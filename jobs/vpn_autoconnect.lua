@@ -192,13 +192,12 @@ job.stop = function()
 end
 
 job.onWindowFocused = function(window, appName)
-  -- Only trigger for Microsoft Edge
-  if appName ~= "Microsoft Edge" then
+  if not isBrowser(appName) then
     return
   end
 
-  utils.debugLog("VPN Auto-Connect", "Edge activated, checking VPN status")
-  connectVPN()
+  utils.debugLog("VPN Auto-Connect", appName .. " activated, checking URL")
+  checkCurrentURL()
 end
 
 return job

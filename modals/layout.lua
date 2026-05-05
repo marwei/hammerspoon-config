@@ -1,16 +1,16 @@
 layoutM = hs.hotkey.modal.new()
+layoutM.name = "Layouts"
 
 function layoutM:entered()
-  toggle_modal_light(dodgerblue, 0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(layoutM) end
 end
 
 function layoutM:exited()
-  toggle_modal_light(dodgerblue, 0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(layoutM) end
 end
 
 layoutM:bind('', 'escape', function() layoutM:exit() end)
+layoutM:bind(hyper, 'escape', function() layoutM:exit() end)
 
 -- Helper function to position a window
 local function positionWindow(appName, xPercent, yPercent, wPercent, hPercent, targetScreen, callback)
@@ -59,7 +59,7 @@ local function positionWindow(appName, xPercent, yPercent, wPercent, hPercent, t
   hs.timer.doAfter(0.2, tryPosition)
 end
 
-layoutM:bind('', 'C', 'Cerebral Layout', function()
+local function layoutCerebral()
   -- Browser on left half of ultrawide (0% to 50%), Obsidian on right half of ultrawide (50% to 100%)
   -- iTerm full screen on built-in display
 
@@ -100,9 +100,11 @@ layoutM:bind('', 'C', 'Cerebral Layout', function()
     end)
   end)
   layoutM:exit()
-end)
+end
+layoutM:bind('', 'C', 'Cerebral Layout', layoutCerebral)
+layoutM:bind(hyper, 'C', layoutCerebral)
 
-layoutM:bind('', 'B', 'Browser Layout', function()
+local function layoutBrowser()
   -- Distribute all browser windows evenly across the screen
   local defaultBrowser = hs.urlevent.getDefaultHandler('http')
 
@@ -162,9 +164,11 @@ layoutM:bind('', 'B', 'Browser Layout', function()
   end
 
   layoutM:exit()
-end)
+end
+layoutM:bind('', 'B', 'Browser Layout', layoutBrowser)
+layoutM:bind(hyper, 'B', layoutBrowser)
 
-layoutM:bind('', 'T', 'Teams Layout', function()
+local function layoutTeams()
   -- Teams in center 50% (25% to 75%), Granola in right 25% (75% to 100%)
   -- Position on primary/ultra-wide screen
 
@@ -183,4 +187,14 @@ layoutM:bind('', 'T', 'Teams Layout', function()
   end)
 
   layoutM:exit()
-end)
+end
+layoutM:bind('', 'T', 'Teams Layout', layoutTeams)
+layoutM:bind(hyper, 'T', layoutTeams)
+
+layoutM.items = {
+  {key = "C", label = "Cerebral Layout (Browser + Obsidian + iTerm)", icon = "lucide:columns-2"},
+  {key = "B", label = "Distribute Browser Windows",                   icon = "lucide:globe"},
+  {key = "T", label = "Teams + Granola Layout",                       icon = "app-name:Microsoft Teams"},
+}
+
+require('lib/icons').prewarm(layoutM.items)

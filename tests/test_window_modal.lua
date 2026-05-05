@@ -73,30 +73,33 @@ end
 
 -- Verify F and C bindings use resize_win (not inline reimplementation)
 -- We check this by reading the source file
-test("F binding calls resize_win (not inline)", function()
+test("F entry calls resize_win('fullscreen')", function()
   local f = io.open("modals/window.lua", "r")
   assert(f, "could not open modals/window.lua")
   local content = f:read("*a")
   f:close()
 
-  -- The F binding should be a one-liner calling resize_win
-  local pattern = "resizeM:bind%('', 'F'.-function%(%)" .. "%s*resize_win%('fullscreen'%)"
-  assert(content:match(pattern), "F binding should call resize_win('fullscreen') directly")
+  local pattern = 'key = "F".-resize_win%(\'fullscreen\'%)'
+  assert(content:match(pattern), "F entry should call resize_win('fullscreen')")
 end)
 
-test("C binding calls resize_win (not inline)", function()
+test("C entry calls resize_win('center')", function()
   local f = io.open("modals/window.lua", "r")
   assert(f, "could not open modals/window.lua")
   local content = f:read("*a")
   f:close()
 
-  local pattern = "resizeM:bind%('', 'C'.-function%(%)" .. "%s*resize_win%('center'%)"
-  assert(content:match(pattern), "C binding should call resize_win('center') directly")
+  local pattern = 'key = "C".-resize_win%(\'center\'%)'
+  assert(content:match(pattern), "C entry should call resize_win('center')")
 end)
 
 test("all bindings have descriptive labels", function()
+  local function isHyperMod(mods)
+    return type(mods) == "table" and #mods == 4
+  end
   for _, b in ipairs(resizeM._bindings) do
-    if b.key ~= "escape" then
+    -- Only check bare/shift-modifier bindings; hyper duplicates don't need labels
+    if b.key ~= "escape" and not isHyperMod(b.mods) then
       assert(b.label ~= nil and b.label ~= "",
         "binding for key '" .. b.key .. "' missing label")
     end

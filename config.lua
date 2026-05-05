@@ -15,7 +15,7 @@ app_shortcuts = {
   {key = 'E', app = 'Microsoft Outlook', label = 'Email'},
   {key = 'V', app = 'Visual Studio Code', label = 'VSCode'},
   {key = 'P', app = 'Photos', bringAllWindows = true},
-  {key = 'F', app = 'Autodesk Fusion', bringAllWindows = true},
+  {key = 'F', app = 'Finder'},
   {key = 'S', app = 'Slack'},
   {key = 'tab', app = 'Telegram',
     bringAllWindows = true, screen = 'native'},
@@ -39,6 +39,7 @@ local app_shortcuts_by_host = {
       bringAllWindows = true, screen = 'native'},
     {key = 'M', app = 'Messages'},
     {key = 'C', app = 'Claude'},
+    {key = 'F', app = 'Finder'},
   },
   ["Work Air"] = {
     {key = 'A', app = 'Activity Monitor'},
@@ -56,6 +57,7 @@ local app_shortcuts_by_host = {
       bringAllWindows = true, screen = 'external', resize = 'quarterright'},
     {key = 'L', app = 'Microsoft Loop'},
     {key = 'C', app = 'Claude'},
+    {key = 'F', app = 'Finder'},
   },
 }
 

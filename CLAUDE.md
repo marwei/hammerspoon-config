@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a Hammerspoon configuration for macOS automation and window management. Hammerspoon is a macOS automation tool that bridges Lua scripting with system-level APIs.
+This is a Hammerspoon configuration for macOS automation and window management, part of a **Karabiner-Elements + Hammerspoon** environment setup. Karabiner handles low-level keyboard remapping (e.g., Capslock → Hyper key), while Hammerspoon bridges Lua scripting with system-level APIs for higher-level automation.
 
 **Official Documentation**: https://www.hammerspoon.org/docs/
 
@@ -40,13 +40,11 @@ The configuration uses Hammerspoon modals for different contexts:
 - Uses `launchAndFocusApp(appName, opts)` helper; opts: `bringAllWindows`, `screen` ("native"/"external"), `resize` (direction)
 - Supports URL-based shortcuts via `url` field (opens in browser instead of launching app)
 - Smart window cycling: if target app is already focused, cycles to next window
-- Shows green modal light when active
 - Auto-exits after launching an app
 
 **Window Resize Modal (`modals/window.lua`)**
 - Activated by Hyper+M
 - Provides comprehensive window management functions
-- Shows red modal light (firebrick) when active
 - Key features:
   - Basic positioning: H (left half), L (right half), J (down half), K (up half)
   - Quarter-width: Shift+H (left quarter), Shift+L (right quarter)
@@ -55,7 +53,6 @@ The configuration uses Hammerspoon modals for different contexts:
 - All resize/position logic lives in `resize_win(direction)` and `move_win(direction)` functions
 
 **Modal Display System (`lib/modal_display.lua`)**
-- `toggle_modal_light(color, alpha)`: Shows/hides a circular indicator in top-right corner
 - `toggle_modal_key_display()`: Shows/hides hotkey cheatsheet overlay
 - `show_global_shortcuts()`: Shows/hides global shortcuts overlay
 - Internal helpers: `createCheatsheetCanvas(title, heightRatio, contentBuilder)` and `renderShortcutGrid()` handle shared canvas boilerplate
@@ -315,7 +312,7 @@ For per-machine differences, add a complete override table to `app_shortcuts_by_
 1. Create new file in `modals/` directory
 2. Add to `module_list` in `config.lua`
 3. Bind activation hotkey in `init.lua`
-4. Use `toggle_modal_light()` and `toggle_modal_key_display()` for visual feedback
+4. Use `toggle_modal_key_display()` for visual feedback
 
 ### Adding New Background Jobs
 
@@ -345,8 +342,8 @@ For automated workflows that run in the background (no user interaction needed):
 
 Global variables are used throughout for state management:
 - Modal objects: `appM`, `resizeM`, `layoutM`, `cerebralM`
-- Functions: `resize_win()`, `move_win()`, `getNativeScreen()`, `getUltraWideScreen()`, `toggle_modal_light()`, `toggle_modal_key_display()`, `show_global_shortcuts()`
-- Display objects: `modal_light`, `cheatsheet_view`, `global_shortcuts_view`, `modal_tray`, etc.
+- Functions: `resize_win()`, `move_win()`, `getNativeScreen()`, `getUltraWideScreen()`, `toggle_modal_key_display()`, `show_global_shortcuts()`
+- Display objects: `cheatsheet_view`, `global_shortcuts_view`, `modal_tray`, etc.
 - Color globals: `white`, `black`, `firebrick`, `lawngreen`, `cyan`, `dodgerblue`, etc. (defined in `lib/style.lua`)
 - Timers/watchers: `globalGC`, `globalScreenWatcher`, `fn_tapper`
 - Background jobs: `background_jobs_state` (framework state), `_G.background_jobs_utils` (shared utilities)
@@ -365,12 +362,10 @@ Standard modal structure:
 modalM = hs.hotkey.modal.new()
 
 function modalM:entered()
-  toggle_modal_light(color, 0.7)
   if show_modal then toggle_modal_key_display() end
 end
 
 function modalM:exited()
-  toggle_modal_light(color, 0.7)
   if show_modal then toggle_modal_key_display() end
 end
 

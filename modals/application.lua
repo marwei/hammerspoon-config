@@ -1,13 +1,12 @@
 appM = hs.hotkey.modal.new()
+appM.name = "Applications"
 
 function appM:entered()
-  toggle_modal_light(lawngreen,0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(appM) end
 end
 
 function appM:exited()
-  toggle_modal_light(lawngreen,0.7)
-  if show_modal == true then toggle_modal_key_display() end
+  if show_modal == true then toggle_modal_key_display(appM) end
 end
 
 appM:bind('', 'escape', function() appM:exit() end)
@@ -25,10 +24,28 @@ local function launchAndFocusApp(appName, opts)
   local currentApp = hs.application.frontmostApplication()
   local targetApp = hs.application.get(appName)
 
+  -- Finder special case: ensure at least one window exists, open Desktop
+  if appName == "Finder" then
+    local ok, _ = hs.applescript([[
+      tell application "Finder"
+        if (count of Finder windows) is 0 then
+          make new Finder window to (path to desktop folder)
+        end if
+        activate
+      end tell
+    ]])
+    if not ok then print("[Application] Finder AppleScript failed") end
+    return
+  end
+
   -- Check if target app is already running and is the current app
-  local isSameApp = targetApp and currentApp and
-                    (targetApp:bundleID() == currentApp:bundleID() or
-                     targetApp:name() == currentApp:name())
+  local isSameApp = false
+  if targetApp and currentApp then
+    local targetBundle = targetApp.bundleID and targetApp:bundleID()
+    local currentBundle = currentApp.bundleID and currentApp:bundleID()
+    isSameApp = (targetBundle and currentBundle and targetBundle == currentBundle) or
+                (targetApp:name() == currentApp:name())
+  end
 
   if isSameApp then
     -- Same app: cycle to next window
@@ -119,9 +136,10 @@ local function launchAndFocusApp(appName, opts)
 end
 
 -- Bind shortcuts from config
+appM.items = {}
 for _, s in ipairs(app_shortcuts) do
   local label = s.label or s.app
-  appM:bind('', s.key, label, function()
+  local action = function()
     if s.url then
       hs.urlevent.openURL(s.url)
     else
@@ -132,5 +150,18 @@ for _, s in ipairs(app_shortcuts) do
       })
     end
     appM:exit()
-  end)
+  end
+  appM:bind('', s.key, label, action)
+  -- Also bind with hyper held so key works if user hasn't released Capslock yet
+  appM:bind(hyper, s.key, action)
+
+  local icon
+  if s.url then
+    icon = "lucide:globe"
+  else
+    icon = "app-name:" .. s.app
+  end
+  table.insert(appM.items, {key = s.key, label = label, icon = icon})
 end
+
+require('lib/icons').prewarm(appM.items)
