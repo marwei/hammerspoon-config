@@ -41,7 +41,7 @@ local app_shortcuts_by_host = {
     {key = 'C', app = 'Claude'},
     {key = 'F', app = 'Finder'},
   },
-  ["Wei's MacBook Air"] = {
+  ["Wei’s MacBook Air"] = {
     {key = 'A', app = 'Activity Monitor'},
     {key = 'space', app = 'Google Chrome', label = 'Browser'},
     {key = 'return', app = 'Obsidian', label = 'Notes (Obsidian)'},
