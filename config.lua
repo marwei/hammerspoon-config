@@ -41,6 +41,20 @@ local app_shortcuts_by_host = {
     {key = 'C', app = 'Claude'},
     {key = 'F', app = 'Finder'},
   },
+  ["Wei's MacBook Air"] = {
+    {key = 'A', app = 'Activity Monitor'},
+    {key = 'space', app = 'Google Chrome', label = 'Browser'},
+    {key = 'return', app = 'Obsidian', label = 'Notes (Obsidian)'},
+    {key = 'I', app = 'iTerm', label = 'Terminal (iTerm)',
+      bringAllWindows = true, screen = 'native', resize = 'fullscreen_native'},
+    {key = 'T', app = 'Slack'},
+    {key = 'V', app = 'Visual Studio Code', label = 'VSCode', bundleID = 'com.microsoft.VSCode'},
+    {key = 'tab', app = 'Telegram',
+      bringAllWindows = true, screen = 'native'},
+    {key = 'M', app = 'Messages'},
+    {key = 'C', app = 'Claude'},
+    {key = 'F', app = 'Finder'},
+  },
   ["Work Air"] = {
     {key = 'A', app = 'Activity Monitor'},
     {key = 'space', app = 'Microsoft Edge', label = 'Browser'},
@@ -71,7 +85,6 @@ module_list = {
     "modals/layout",
     "modals/automation",
     "modals/cerebral",
-    "modals/kay",  -- Kay work co-pilot
     "widgets/background_jobs",  -- Background jobs framework
 }
 
