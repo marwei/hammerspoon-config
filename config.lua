@@ -71,6 +71,7 @@ module_list = {
     "modals/layout",
     "modals/automation",
     "modals/cerebral",
+    "modals/kay",  -- Kay work co-pilot
     "widgets/background_jobs",  -- Background jobs framework
 }
 

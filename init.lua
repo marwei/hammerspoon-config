@@ -33,6 +33,10 @@ hs.hotkey.bind(layoutM_keys[1], layoutM_keys[2], 'Enter Layout Mode', function()
 hs.hotkey.bind(autoM_keys[1], autoM_keys[2], 'Enter Workflow Mode', function() autoM:enter() end)
 hs.hotkey.bind(cerebralM_keys[1], cerebralM_keys[2], 'Enter Cerebral Mode', function() cerebralM:enter() end)
 
+-- Kay Work Co-Pilot
+kayM_keys = {hyper, "K"}
+hs.hotkey.bind(kayM_keys[1], kayM_keys[2], 'Enter Kay Mode', function() kayM:enter() end)
+
 globalGC = hs.timer.doEvery(180, collectgarbage)
 globalScreenWatcher = hs.screen.watcher.newWithActiveScreen(function(activeChanged)
   if activeChanged then
